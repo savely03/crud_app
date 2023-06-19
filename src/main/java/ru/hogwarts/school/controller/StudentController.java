@@ -2,9 +2,12 @@ package ru.hogwarts.school.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.dto.StudentDto;
+import ru.hogwarts.school.mapper.StudentMapper;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @RestController
@@ -13,12 +16,12 @@ import java.util.Collection;
 public class StudentController {
 
     private final StudentService studentService;
+    private final StudentMapper studentMapper;
 
     @PostMapping
-    public Student createStudent(@RequestBody Student student) {
-        return studentService.createStudent(student);
+    public Student createStudent(@Valid @RequestBody StudentDto studentDto) {
+        return studentService.createStudent(studentMapper.toEntity(studentDto));
     }
-
 
     @GetMapping("/{id}")
     public Student getStudentById(@PathVariable Long id) {
@@ -31,8 +34,8 @@ public class StudentController {
     }
 
     @PutMapping
-    public Student updateStudent(@RequestBody Student student) {
-        return studentService.updateStudent(student);
+    public Student updateStudent(@Valid @RequestBody StudentDto studentDto) {
+        return studentService.updateStudent(studentMapper.toEntity(studentDto));
     }
 
     @DeleteMapping("/{id}")

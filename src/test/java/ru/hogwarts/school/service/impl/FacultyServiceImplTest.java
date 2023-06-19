@@ -2,28 +2,40 @@ package ru.hogwarts.school.service.impl;
 
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
-import ru.hogwarts.school.service.FacultyService;
+import ru.hogwarts.school.repository.FacultyRepository;
 
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static ru.hogwarts.school.constants.FacultyConstants.*;
 
+@ExtendWith(MockitoExtension.class)
 class FacultyServiceImplTest {
 
-    private final FacultyService out = new FacultyServiceImpl();
+    @Mock
+    private FacultyRepository facultyRepository;
+    @InjectMocks
+    private FacultyServiceImpl out;
 
     @Test
     void createFacultyTest() {
-        int initialSize = out.getFaculties().size();
+        when(facultyRepository.save(FACULTY1)).thenReturn(FACULTY1);
 
         assertThat(out.createFaculty(FACULTY1)).isEqualTo(FACULTY1);
-        assertThat(out.getFaculties()).hasSize(initialSize + 1);
     }
 
     @Test
     void getFacultyByIdTest() {
-        out.createFaculty(FACULTY1);
+        when(facultyRepository.findById(anyLong())).thenReturn(Optional.of(FACULTY1));
 
         assertThat(out.getFacultyById(FACULTY1.getId())).isEqualTo(FACULTY1);
     }
@@ -37,17 +49,17 @@ class FacultyServiceImplTest {
 
     @Test
     void getFacultiesTest() {
-        out.createFaculty(FACULTY1);
+        when(facultyRepository.findAll()).thenReturn(List.of(FACULTY1, FACULTY2));
 
-        assertThat(out.getFaculties()).containsOnly(FACULTY1).hasSize(1);
+        assertThat(out.getFaculties()).containsExactly(FACULTY1, FACULTY2).hasSize(2);
     }
 
     @Test
     void updateFacultyTest() {
-        out.createFaculty(FACULTY1);
+        when(facultyRepository.findById(anyLong())).thenReturn(Optional.of(FACULTY1));
+        when(facultyRepository.save(FACULTY2)).thenReturn(FACULTY2);
 
         assertThat(out.updateFaculty(FACULTY2)).isEqualTo(FACULTY2);
-        assertThat(out.getFaculties()).contains(FACULTY2);
     }
 
     @Test
@@ -59,11 +71,11 @@ class FacultyServiceImplTest {
 
     @Test
     void deleteFacultyByIdTest() {
-        out.createFaculty(FACULTY1);
-        int initialSize = out.getFaculties().size();
+        when(facultyRepository.findById(anyLong())).thenReturn(Optional.of(FACULTY1));
 
         assertThat(out.deleteFacultyById(FACULTY1.getId())).isEqualTo(FACULTY1);
-        assertThat(out.getFaculties()).hasSize(initialSize - 1);
+
+        verify(facultyRepository, times(1)).deleteById(anyLong());
     }
 
     @Test
@@ -75,8 +87,8 @@ class FacultyServiceImplTest {
 
     @Test
     void getFacultiesByColorTest() {
-        out.createFaculty(FACULTY1);
-        out.createFaculty(FACULTY2);
+        when(facultyRepository.findAllByColor(FACULTY1.getColor())).thenReturn(Collections.singletonList(FACULTY1));
+        when(facultyRepository.findAllByColor(FACULTY2.getColor())).thenReturn(Collections.singletonList(FACULTY2));
 
         assertThat(out.getFacultiesByColor(FACULTY1.getColor())).hasSize(1).containsOnly(FACULTY1);
         assertThat(out.getFacultiesByColor(FACULTY2.getColor())).hasSize(1).containsOnly(FACULTY2);

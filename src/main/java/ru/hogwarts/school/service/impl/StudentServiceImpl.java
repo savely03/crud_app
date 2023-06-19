@@ -1,71 +1,62 @@
 package ru.hogwarts.school.service.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hogwarts.school.exception.StudentNotFoundException;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
+@Transactional(readOnly = true)
 public class StudentServiceImpl implements StudentService {
 
-    private final Map<Long, Student> students;
+    private final StudentRepository studentRepository;
 
-
-    private long cntId;
-
-    public StudentServiceImpl() {
-        students = new HashMap<>();
+    public StudentServiceImpl(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
-    private void checkStudentById(Long id) {
-        if (!students.containsKey(id)) {
-            throw new StudentNotFoundException("Данный студент не найден");
-        }
-    }
 
     @Override
+    @Transactional
     public Student createStudent(Student student) {
-        student.setId(++cntId);
-        students.put(student.getId(), student);
-        return student;
+        return studentRepository.save(student);
     }
 
     @Override
     public Student getStudentById(Long id) {
-        checkStudentById(id);
-        return students.get(id);
+        return studentRepository.findById(id).orElseThrow(
+                () -> new StudentNotFoundException("Данный студент не найден")
+        );
     }
 
     @Override
     public Collection<Student> getStudents() {
-        return students.values();
+        return studentRepository.findAll();
     }
 
     @Override
+    @Transactional
     public Student updateStudent(Student student) {
-        checkStudentById(student.getId());
-        students.put(student.getId(), student);
+        getStudentById(student.getId());
+        return studentRepository.save(student);
+    }
+
+    @Override
+    @Transactional
+    public Student deleteStudentById(Long id) {
+        Student student = getStudentById(id);
+        studentRepository.deleteById(id);
         return student;
     }
 
     @Override
-    public Student deleteStudentById(Long id) {
-        checkStudentById(id);
-        return students.remove(id);
-    }
-
-    @Override
     public Collection<Student> getStudentsByAge(int age) {
-        return getStudents()
-                .stream()
-                .filter(student -> student.getAge() == age)
-                .collect(Collectors.toList());
+        return studentRepository.findAllByAge(age);
     }
 
 }

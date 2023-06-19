@@ -2,9 +2,12 @@ package ru.hogwarts.school.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.dto.FacultyDto;
+import ru.hogwarts.school.mapper.FacultyMapper;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @RestController
@@ -13,10 +16,11 @@ import java.util.Collection;
 public class FacultyController {
 
     private final FacultyService facultyService;
+    private final FacultyMapper facultyMapper;
 
     @PostMapping
-    public Faculty createFaculty(@RequestBody Faculty faculty) {
-        return facultyService.createFaculty(faculty);
+    public Faculty createFaculty(@Valid @RequestBody FacultyDto facultyDto) {
+        return facultyService.createFaculty(facultyMapper.toEntity(facultyDto));
     }
 
     @GetMapping("/{id}")
@@ -30,8 +34,8 @@ public class FacultyController {
     }
 
     @PutMapping
-    public Faculty updateFaculty(@RequestBody Faculty faculty) {
-        return facultyService.updateFaculty(faculty);
+    public Faculty updateFaculty(@Valid @RequestBody FacultyDto facultyDto) {
+        return facultyService.updateFaculty(facultyMapper.toEntity(facultyDto));
     }
 
     @DeleteMapping("/{id}")
