@@ -67,6 +67,8 @@ class FacultyServiceImplTest {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
                 () -> out.updateFaculty(FACULTY1)
         );
+
+        verify(facultyRepository, times(0)).save(FACULTY1);
     }
 
     @Test
@@ -83,6 +85,8 @@ class FacultyServiceImplTest {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
                 () -> out.deleteFacultyById(FACULTY1.getId())
         );
+
+        verify(facultyRepository, times(0)).deleteById(anyLong());
     }
 
     @Test

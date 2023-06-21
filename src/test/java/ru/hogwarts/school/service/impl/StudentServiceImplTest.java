@@ -67,6 +67,8 @@ class StudentServiceImplTest {
         assertThatExceptionOfType(StudentNotFoundException.class).isThrownBy(
                 () -> out.updateStudent(STUDENT1)
         );
+
+        verify(studentRepository, times(0)).save(STUDENT1);
     }
 
     @Test
@@ -82,6 +84,8 @@ class StudentServiceImplTest {
         assertThatExceptionOfType(StudentNotFoundException.class).isThrownBy(
                 () -> out.deleteStudentById(STUDENT1.getId())
         );
+
+        verify(studentRepository, times(0)).deleteById(anyLong());
     }
 
     @Test
