@@ -1,99 +1,140 @@
 package ru.hogwarts.school.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import ru.hogwarts.school.dto.StudentDto;
+import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.exception.StudentNotFoundException;
+import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
+import ru.hogwarts.school.service.StudentService;
+import ru.hogwarts.school.test_util.DbTest;
+
+import static org.assertj.core.api.Assertions.*;
 
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.*;
-import static ru.hogwarts.school.constants.FacultyConstants.FACULTY1;
-import static ru.hogwarts.school.constants.StudentConstants.*;
-
-@ExtendWith(MockitoExtension.class)
+@DbTest
+@ContextConfiguration(classes = StudentContextConfig.class)
 class StudentServiceImplTest {
 
-    @Mock
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
     private StudentRepository studentRepository;
-    @InjectMocks
-    private StudentServiceImpl out;
+
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    private Student studentOne;
+    private Student studentTwo;
+    private StudentDto studentDto;
+    private Faculty faculty;
+
+
+    @BeforeEach
+    void setUp() {
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
+        faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
+        studentOne = Student.builder().id(0L).name("student1").age(20).faculty(faculty).build();
+        studentTwo = Student.builder().id(0L).name("student2").age(25).faculty(faculty).build();
+        studentDto = StudentDto.builder().id(0L).name("studentDto").age(26).facultyId(faculty.getId()).build();
+    }
 
     @Test
     void createStudentTest() {
-        when(studentRepository.save(STUDENT1)).thenReturn(STUDENT1);
+        Student student = studentService.createStudent(studentDto);
 
-        assertThat(out.createStudent(STUDENT1)).isEqualTo(STUDENT1);
+        assertThat(student.getAge()).isEqualTo(studentDto.getAge());
+        assertThat(student.getName()).isEqualTo(studentDto.getName());
+        assertThat(student.getFaculty()).isEqualTo(faculty);
+        assertThat(studentRepository.count()).isOne();
+    }
+
+    @Test
+    void createStudentWhenFacultyDoesNotExistTest() {
+        studentDto.setFacultyId(0);
+
+        assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
+                () -> studentService.createStudent(studentDto)
+        );
     }
 
     @Test
     void getStudentByIdTest() {
-        when(studentRepository.findById(anyLong())).thenReturn(Optional.of(STUDENT1));
+        studentRepository.save(studentOne);
 
-        assertThat(out.getStudentById(STUDENT1.getId())).isEqualTo(STUDENT1);
+        assertThat(studentService.getStudentById(studentOne.getId())).isEqualTo(studentOne);
     }
 
     @Test
     void getStudentByIdWhenStudentDoesNotExistTest() {
         assertThatExceptionOfType(StudentNotFoundException.class).isThrownBy(
-                () -> out.getStudentById(FACULTY1.getId())
+                () -> studentService.getStudentById(studentOne.getId())
         );
     }
 
     @Test
     void getStudentsTest() {
-        when(studentRepository.findAll()).thenReturn(List.of(STUDENT1, STUDENT2));
+        studentRepository.save(studentOne);
+        studentRepository.save(studentTwo);
 
-        assertThat(out.getStudents()).containsExactly(STUDENT1, STUDENT2).hasSize(2);
+        assertThat(studentService.getStudents()).contains(studentOne, studentTwo);
     }
 
     @Test
     void updateStudentTest() {
-        when(studentRepository.findById(anyLong())).thenReturn(Optional.of(STUDENT1));
-        when(studentRepository.save(STUDENT2)).thenReturn(STUDENT2);
+        studentRepository.save(studentOne);
+        studentDto.setId(studentOne.getId());
 
-        assertThat(out.updateStudent(STUDENT2)).isEqualTo(STUDENT2);
-    }
-
-    @Test
-    void updateStudentWhenStudentDoesNotExistTest() {
-        assertThatExceptionOfType(StudentNotFoundException.class).isThrownBy(
-                () -> out.updateStudent(STUDENT1)
-        );
-
-        verify(studentRepository, times(0)).save(STUDENT1);
+        Student student = studentService.updateStudent(studentDto);
+        assertThat(student).usingRecursiveComparison().ignoringFields("faculty").isEqualTo(studentDto);
+        assertThat(student.getFaculty().getId()).isEqualTo(studentDto.getFacultyId());
+        assertThat(studentService.getFacultyByStudentId(studentOne.getId())).isNotEqualTo(studentOne);
     }
 
     @Test
     void deleteStudentByIdTest() {
-        when(studentRepository.findById(anyLong())).thenReturn(Optional.of(STUDENT1));
+        studentRepository.save(studentOne);
 
-        assertThat(out.deleteStudentById(STUDENT1.getId())).isEqualTo(STUDENT1);
-        verify(studentRepository, times(1)).deleteById(STUDENT1.getId());
+        assertThat(studentService.deleteStudentById(studentOne.getId())).isEqualTo(studentOne);
+        assertThat(studentRepository.count()).isZero();
     }
 
     @Test
     void deleteStudentByIdWhenStudentDoesNotExistTest() {
         assertThatExceptionOfType(StudentNotFoundException.class).isThrownBy(
-                () -> out.deleteStudentById(STUDENT1.getId())
+                () -> studentService.deleteStudentById(studentOne.getId())
         );
-
-        verify(studentRepository, times(0)).deleteById(anyLong());
     }
 
     @Test
-    void getStudentsByAge() {
-        when(studentRepository.findAllByAge(STUDENT1.getAge())).thenReturn(List.of(STUDENT1));
-        when(studentRepository.findAllByAge(STUDENT2.getAge())).thenReturn(List.of(STUDENT2));
+    void getStudentsByAgeTest() {
+        studentRepository.save(studentOne);
+        studentRepository.save(studentTwo);
 
-        assertThat(out.getStudentsByAge(STUDENT1.getAge())).hasSize(1).containsOnly(STUDENT1);
-        assertThat(out.getStudentsByAge(STUDENT2.getAge())).hasSize(1).containsOnly(STUDENT2);
+        assertThat(studentService.getStudentsByAge(studentOne.getAge())).contains(studentOne);
+        assertThat(studentService.getStudentsByAge(studentTwo.getAge())).contains(studentTwo);
+    }
+
+    @Test
+    void getStudentsByAgeBetweenTest() {
+        studentRepository.save(studentOne);
+        studentRepository.save(studentTwo);
+
+        assertThat(studentService.getStudentsByAgeBetween(studentOne.getAge(), studentTwo.getAge()))
+                .containsOnly(studentOne, studentTwo);
+    }
+
+    @Test
+    void getFacultyByStudentIdTest() {
+        studentRepository.save(studentOne);
+
+        assertThat(studentService.getFacultyByStudentId(studentOne.getId())).isEqualTo(faculty);
     }
 }

@@ -6,6 +6,8 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 public class FacultyDto {
+    private long id;
+
     @NotBlank(message = "Name is not filled in")
     private String name;
 

@@ -1,21 +1,38 @@
 package ru.hogwarts.school.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 
-@Data
+
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
+@EqualsAndHashCode(exclude = "students")
+@Builder
 @Entity
 public class Faculty {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
+    @Column(unique = true)
     private String name;
 
+    @Column(unique = true)
     private String color;
+
+    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
+    private Collection<Student> students;
+
+    public void addStudent(Student student) {
+        if (Objects.isNull(students)) {
+            students = new ArrayList<>();
+        }
+        students.add(student);
+        student.setFaculty(this);
+    }
 }

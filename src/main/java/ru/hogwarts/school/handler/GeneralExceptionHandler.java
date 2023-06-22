@@ -8,23 +8,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.hogwarts.school.dto.ErrorResponse;
-import ru.hogwarts.school.exception.FacultyNotFoundException;
-import ru.hogwarts.school.exception.StudentNotFoundException;
+import ru.hogwarts.school.exception.TypicalException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GeneralExceptionHandler {
-
-    @ExceptionHandler(FacultyNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleFacultyNotFoundException(FacultyNotFoundException e) {
-        ErrorResponse response = new ErrorResponse(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    @ExceptionHandler(StudentNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleStudentNotFoundException(StudentNotFoundException e) {
+    @ExceptionHandler(TypicalException.class)
+    public ResponseEntity<ErrorResponse> handleStudentNotFoundException(TypicalException e) {
         ErrorResponse response = new ErrorResponse(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }

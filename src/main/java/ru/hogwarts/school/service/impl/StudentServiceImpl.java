@@ -1,29 +1,35 @@
 package ru.hogwarts.school.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.exception.StudentNotFoundException;
+import ru.hogwarts.school.mapper.StudentMapper;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.StudentRepository;
+import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
 
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
-
-    public StudentServiceImpl(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
-
+    private final FacultyService facultyService;
+    private final StudentMapper studentMapper;
 
     @Override
     @Transactional
-    public Student createStudent(Student student) {
+    public Student createStudent(StudentDto studentDto) {
+        Faculty faculty = facultyService.getFacultyById(studentDto.getFacultyId());
+        Student student = studentMapper.toEntity(studentDto);
+        student.setFaculty(faculty);
         return studentRepository.save(student);
     }
 
@@ -41,8 +47,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public Student updateStudent(Student student) {
-        getStudentById(student.getId());
+    public Student updateStudent(StudentDto studentDto) {
+        getStudentById(studentDto.getId());
+        Faculty faculty = facultyService.getFacultyById(studentDto.getFacultyId());
+        Student student = studentMapper.toEntity(studentDto);
+        student.setFaculty(faculty);
         return studentRepository.save(student);
     }
 
@@ -59,4 +68,14 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAllByAge(age);
     }
 
+    @Override
+    public Collection<Student> getStudentsByAgeBetween(int minAge, int maxAge) {
+        return studentRepository.findAllByAgeBetween(minAge, maxAge);
+
+    }
+
+    @Override
+    public Faculty getFacultyByStudentId(Long id) {
+        return getStudentById(id).getFaculty();
+    }
 }

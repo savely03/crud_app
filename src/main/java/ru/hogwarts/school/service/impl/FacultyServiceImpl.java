@@ -1,9 +1,12 @@
 package ru.hogwarts.school.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hogwarts.school.exception.FacultyAlreadyAddedException;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.service.FacultyService;
 
@@ -11,18 +14,18 @@ import java.util.Collection;
 
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FacultyServiceImpl implements FacultyService {
 
     private final FacultyRepository facultyRepository;
 
-    public FacultyServiceImpl(FacultyRepository facultyRepository) {
-        this.facultyRepository = facultyRepository;
-    }
-
     @Override
     @Transactional
     public Faculty createFaculty(Faculty faculty) {
+        if (facultyRepository.findByNameOrColor(faculty.getName(), faculty.getColor()).isPresent()) {
+            throw new FacultyAlreadyAddedException("Факультет с таким именем или цветом уже добавлен");
+        }
         return facultyRepository.save(faculty);
     }
 
@@ -54,8 +57,15 @@ public class FacultyServiceImpl implements FacultyService {
     }
 
     @Override
-    public Collection<Faculty> getFacultiesByColor(String color) {
-        return facultyRepository.findAllByColor(color);
+    public Faculty getFacultyByNameOrColor(String name, String color) {
+        return facultyRepository.findByNameOrColor(name, color).orElseThrow(
+                () -> new FacultyNotFoundException("Данный факультет не найден")
+        );
+    }
+
+    @Override
+    public Collection<Student> getStudentsByFacultyId(Long id) {
+        return getFacultyById(id).getStudents();
     }
 
 }
