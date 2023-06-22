@@ -41,9 +41,9 @@ class StudentServiceImplTest {
         studentRepository.deleteAll();
         facultyRepository.deleteAll();
         faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
-        studentOne = Student.builder().id(0L).name("student1").age(20).faculty(faculty).build();
-        studentTwo = Student.builder().id(0L).name("student2").age(25).faculty(faculty).build();
-        studentDto = StudentDto.builder().id(0L).name("studentDto").age(26).facultyId(faculty.getId()).build();
+        studentOne = Student.builder().name("student1").age(20).faculty(faculty).build();
+        studentTwo = Student.builder().name("student2").age(25).faculty(faculty).build();
+        studentDto = StudentDto.builder().name("studentDto").age(26).facultyId(faculty.getId()).build();
     }
 
     @Test

@@ -34,8 +34,8 @@ class FacultyServiceImplTest {
     @BeforeEach
     void setUp() {
         facultyRepository.deleteAll();
-        facultyOne = Faculty.builder().id(0L).name("name1").color("color1").build();
-        facultyTwo = Faculty.builder().id(0L).name("name2").color("color2").build();
+        facultyOne = Faculty.builder().name("name1").color("color1").build();
+        facultyTwo = Faculty.builder().name("name2").color("color2").build();
     }
 
     @Test
@@ -117,7 +117,7 @@ class FacultyServiceImplTest {
     @Test
     @Disabled
     void getStudentsByFacultyId() {
-        Student student = Student.builder().id(0L).name("student").age(20).build();
+        Student student = Student.builder().name("student").age(20).build();
         facultyOne.addStudent(student);
         Faculty faculty = facultyRepository.save(facultyOne);
 
