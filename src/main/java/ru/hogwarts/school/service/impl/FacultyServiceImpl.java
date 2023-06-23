@@ -23,7 +23,7 @@ public class FacultyServiceImpl implements FacultyService {
     @Override
     @Transactional
     public Faculty createFaculty(Faculty faculty) {
-        if (facultyRepository.findByNameOrColor(faculty.getName(), faculty.getColor()).isPresent()) {
+        if (facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(faculty.getName(), faculty.getColor()).isPresent()) {
             throw new FacultyAlreadyAddedException("Факультет с таким именем или цветом уже добавлен");
         }
         return facultyRepository.save(faculty);
@@ -58,7 +58,7 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public Faculty getFacultyByNameOrColor(String name, String color) {
-        return facultyRepository.findByNameOrColor(name, color).orElseThrow(
+        return facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(name, color).orElseThrow(
                 () -> new FacultyNotFoundException("Данный факультет не найден")
         );
     }
