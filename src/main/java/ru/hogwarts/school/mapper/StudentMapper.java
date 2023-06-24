@@ -2,16 +2,13 @@ package ru.hogwarts.school.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.hogwarts.school.dto.StudentDto;
-import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.dto.StudentDtoIn;
+import ru.hogwarts.school.dto.StudentDtoOut;
+import ru.hogwarts.school.entity.Student;
 
 @Mapper
-public interface StudentMapper extends GeneralMapper<Student, StudentDto> {
-    @Override
+public interface StudentMapper {
     @Mapping(target = "facultyId", source = "entity.faculty.id")
-    StudentDto toDto(Student entity);
-
-    @Override
-    Student toEntity(StudentDto studentDto);
-
+    StudentDtoOut toDto(Student entity);
+    Student toEntity(StudentDtoIn studentDto);
 }

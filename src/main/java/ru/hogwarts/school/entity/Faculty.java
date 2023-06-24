@@ -1,11 +1,9 @@
-package ru.hogwarts.school.model;
+package ru.hogwarts.school.entity;
 
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 
 @AllArgsConstructor
@@ -27,12 +25,4 @@ public class Faculty {
 
     @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
     private Collection<Student> students;
-
-    public void addStudent(Student student) {
-        if (Objects.isNull(students)) {
-            students = new ArrayList<>();
-        }
-        students.add(student);
-        student.setFaculty(this);
-    }
 }

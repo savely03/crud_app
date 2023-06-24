@@ -2,15 +2,13 @@ package ru.hogwarts.school.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.hogwarts.school.dto.FacultyDto;
-import ru.hogwarts.school.dto.StudentDto;
-import ru.hogwarts.school.mapper.FacultyMapper;
-import ru.hogwarts.school.mapper.StudentMapper;
+import ru.hogwarts.school.dto.FacultyDtoIn;
+import ru.hogwarts.school.dto.FacultyDtoOut;
+import ru.hogwarts.school.dto.StudentDtoOut;
 import ru.hogwarts.school.service.FacultyService;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/faculty")
@@ -18,46 +16,40 @@ import java.util.stream.Collectors;
 public class FacultyController {
 
     private final FacultyService facultyService;
-    private final FacultyMapper facultyMapper;
-    private final StudentMapper studentMapper;
 
     @PostMapping
-    public FacultyDto createFaculty(@Valid @RequestBody FacultyDto facultyDto) {
-        return facultyMapper.toDto(facultyService.createFaculty(facultyMapper.toEntity(facultyDto)));
+    public FacultyDtoOut createFaculty(@Valid @RequestBody FacultyDtoIn facultyDtoIn) {
+        return facultyService.createFaculty(facultyDtoIn);
     }
 
     @GetMapping("/{id}")
-    public FacultyDto getFacultyById(@PathVariable Long id) {
-        return facultyMapper.toDto(facultyService.getFacultyById(id));
+    public FacultyDtoOut getFacultyById(@PathVariable Long id) {
+        return facultyService.getFacultyById(id);
     }
 
     @GetMapping
-    public Collection<FacultyDto> getFaculties() {
-        return facultyService.getFaculties().stream()
-                .map(facultyMapper::toDto)
-                .collect(Collectors.toList());
+    public Collection<FacultyDtoOut> getFaculties() {
+        return facultyService.getFaculties();
     }
 
-    @PutMapping
-    public FacultyDto updateFaculty(@Valid @RequestBody FacultyDto facultyDto) {
-        return facultyMapper.toDto(facultyService.updateFaculty(facultyMapper.toEntity(facultyDto)));
+    @PutMapping("/{id}")
+    public FacultyDtoOut updateFaculty(@PathVariable Long id, @Valid @RequestBody FacultyDtoIn facultyDtoIn) {
+        return facultyService.updateFaculty(id, facultyDtoIn);
     }
 
     @DeleteMapping("/{id}")
-    public FacultyDto deleteFacultyById(@PathVariable Long id) {
-        return facultyMapper.toDto(facultyService.deleteFacultyById(id));
+    public FacultyDtoOut deleteFacultyById(@PathVariable Long id) {
+        return facultyService.deleteFacultyById(id);
     }
 
-    @GetMapping("/by")
-    public FacultyDto getFacultyByNameOrColor(@RequestParam(required = false) String name,
-                                           @RequestParam(required = false) String color) {
-        return facultyMapper.toDto(facultyService.getFacultyByNameOrColor(name, color));
+    @GetMapping("/filter")
+    public FacultyDtoOut getFacultyByNameOrColor(@RequestParam(required = false) String name,
+                                                 @RequestParam(required = false) String color) {
+        return facultyService.getFacultyByNameOrColor(name, color);
     }
 
     @GetMapping("/{id}/students")
-    public Collection<StudentDto> getStudentsByFacultyId(@PathVariable Long id) {
-        return facultyService.getStudentsByFacultyId(id).stream()
-                .map(studentMapper::toDto)
-                .collect(Collectors.toList());
+    public Collection<StudentDtoOut> getStudentsByFacultyId(@PathVariable Long id) {
+        return facultyService.getStudentsByFacultyId(id);
     }
 }

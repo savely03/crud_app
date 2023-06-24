@@ -1,25 +1,28 @@
 package ru.hogwarts.school.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import ru.hogwarts.school.dto.FacultyDtoIn;
+import ru.hogwarts.school.dto.FacultyDtoOut;
+import ru.hogwarts.school.dto.StudentDtoIn;
+import ru.hogwarts.school.dto.StudentDtoOut;
+import ru.hogwarts.school.exception.FacultyAlreadyAddedException;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
-import ru.hogwarts.school.model.Faculty;
-import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.FacultyService;
+import ru.hogwarts.school.service.StudentService;
 import ru.hogwarts.school.test_util.DbTest;
 
 
-import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.*;
 
 
 @DbTest
-@ContextConfiguration(classes = FacultyContextConfig.class)
+@SpringBootTest
 class FacultyServiceImplTest {
 
     @Autowired
@@ -28,67 +31,90 @@ class FacultyServiceImplTest {
     @Autowired
     private FacultyService facultyService;
 
-    private Faculty facultyOne;
-    private Faculty facultyTwo;
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    private FacultyDtoIn facultyDtoIn;
+    private FacultyDtoIn facultyDtoInSecond;
+    private StudentDtoIn studentDtoIn;
 
     @BeforeEach
     void setUp() {
         facultyRepository.deleteAll();
-        facultyOne = Faculty.builder().name("name1").color("color1").build();
-        facultyTwo = Faculty.builder().name("name2").color("color2").build();
+        studentRepository.deleteAll();
+        facultyDtoIn = FacultyDtoIn.builder().name("name1").color("color1").build();
+        facultyDtoInSecond = FacultyDtoIn.builder().name("name2").color("color2").build();
+        studentDtoIn = StudentDtoIn.builder().name("student").age(21).build();
     }
 
     @Test
     void createFacultyTest() {
-        assertThat(facultyService.createFaculty(facultyOne))
-                .usingRecursiveComparison().ignoringFields("id").isEqualTo(facultyOne);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
+
+        assertThat(facultyDtoOut)
+                .usingRecursiveComparison()
+                .ignoringFields("id")
+                .isEqualTo(facultyDtoIn);
         assertThat(facultyRepository.count()).isOne();
     }
 
     @Test
-    void getFacultyByIdTest() {
-        facultyService.createFaculty(facultyOne);
+    void createFacultyWhenFacultyAlreadyAdded() {
+        facultyService.createFaculty(facultyDtoIn);
 
-        assertThat(facultyService.getFacultyById(facultyOne.getId())).isEqualTo(facultyOne);
+        assertThatExceptionOfType(FacultyAlreadyAddedException.class).isThrownBy(
+                () -> facultyService.createFaculty(facultyDtoIn)
+        );
+    }
+
+    @Test
+    void getFacultyByIdTest() {
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
+
+        assertThat(facultyService.getFacultyById(facultyDtoOut.getId())).isEqualTo(facultyDtoOut);
     }
 
     @Test
     void getFacultyByIdWhenFacultyDoesNotExist() {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
-                () -> facultyService.getFacultyById(facultyOne.getId())
+                () -> facultyService.getFacultyById(1L)
         );
     }
 
     @Test
     void getFacultiesTest() {
-        facultyRepository.save(facultyOne);
-        facultyRepository.save(facultyTwo);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
 
-        assertThat(facultyService.getFaculties()).contains(facultyOne, facultyTwo);
+        assertThat(facultyService.getFaculties()).containsOnly(facultyDtoOut);
     }
 
     @Test
     void updateFacultyTest() {
-        facultyRepository.save(facultyOne);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
+        FacultyDtoOut facultyDtoOutSecond = facultyService.updateFaculty(facultyDtoOut.getId(), facultyDtoInSecond);
 
-        facultyTwo.setId(facultyOne.getId());
-
-        assertThat(facultyService.updateFaculty(facultyTwo)).isEqualTo(facultyTwo);
-        assertThat(facultyService.getFacultyById(facultyTwo.getId())).isNotEqualTo(facultyOne);
+        assertThat(facultyDtoOutSecond.getId()).isEqualTo(facultyDtoOut.getId());
+        assertThat(facultyDtoOutSecond)
+                .usingRecursiveComparison()
+                .ignoringFields("students", "id")
+                .isEqualTo(facultyDtoInSecond);
     }
 
     @Test
     void updateFacultyWhenFacultyDoesNotExist() {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
-                () -> facultyService.deleteFacultyById(facultyOne.getId())
+                () -> facultyService.deleteFacultyById(1L)
         );
     }
 
     @Test
     void deleteFacultyByIdTest() {
-        facultyRepository.save(facultyOne);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
 
-        assertThat(facultyService.deleteFacultyById(facultyOne.getId())).isEqualTo(facultyOne);
+        assertThat(facultyService.deleteFacultyById(facultyDtoOut.getId())).isEqualTo(facultyDtoOut);
         assertThat(facultyRepository.count()).isZero();
 
     }
@@ -96,32 +122,31 @@ class FacultyServiceImplTest {
     @Test
     void deleteFacultyByIdWhenFacultyDoesNotExist() {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
-                () -> facultyService.deleteFacultyById(facultyOne.getId())
+                () -> facultyService.deleteFacultyById(1L)
         );
     }
 
     @Test
     void getFacultyByNameOrColorTest() {
-        Faculty faculty = facultyRepository.save(facultyOne);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
 
-        assertThat(facultyService.getFacultyByNameOrColor(facultyOne.getName(), facultyOne.getColor())).isEqualTo(faculty);
+        assertThat(facultyService.getFacultyByNameOrColor(facultyDtoOut.getName(), facultyDtoOut.getColor()))
+                .isEqualTo(facultyDtoOut);
     }
 
     @Test
     void getFacultyByNameOrColorWhenFacultyDoesNotExistTest() {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
-                () -> facultyService.getFacultyByNameOrColor(facultyOne.getName(), facultyTwo.getColor())
+                () -> facultyService.getFacultyByNameOrColor(facultyDtoIn.getName(), facultyDtoIn.getColor())
         );
     }
 
     @Test
-    @Disabled
     void getStudentsByFacultyId() {
-        Student student = Student.builder().name("student").age(20).build();
-        facultyOne.addStudent(student);
-        Faculty faculty = facultyRepository.save(facultyOne);
+        FacultyDtoOut facultyDtoOut = facultyService.createFaculty(facultyDtoIn);
+        studentDtoIn.setFacultyId(facultyDtoOut.getId());
+        StudentDtoOut studentDtoOut = studentService.createStudent(studentDtoIn);
 
-        Collection<Student> students = facultyService.getStudentsByFacultyId(faculty.getId());
-        assertThat(students).containsOnly(student);
+        assertThat(facultyService.getStudentsByFacultyId(facultyDtoOut.getId())).containsOnly(studentDtoOut);
     }
 }
