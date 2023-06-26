@@ -3,9 +3,8 @@ package ru.hogwarts.school.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hogwarts.school.dto.FacultyDtoIn;
-import ru.hogwarts.school.dto.FacultyDtoOut;
-import ru.hogwarts.school.dto.StudentDtoOut;
+import ru.hogwarts.school.dto.FacultyDto;
+import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.exception.FacultyAlreadyAddedException;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.mapper.FacultyMapper;
@@ -28,20 +27,21 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     @Transactional
-    public FacultyDtoOut createFaculty(FacultyDtoIn facultyDtoIn) {
-        if (facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(facultyDtoIn.getName(), facultyDtoIn.getColor()).isPresent()) {
+    public FacultyDto createFaculty(FacultyDto facultyDto) {
+        if (facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(facultyDto.getName(), facultyDto.getColor()).isPresent()) {
             throw new FacultyAlreadyAddedException();
         }
-        return facultyMapper.toDto(facultyRepository.save(facultyMapper.toEntity(facultyDtoIn)));
+        facultyDto.setId(0L);
+        return facultyMapper.toDto(facultyRepository.save(facultyMapper.toEntity(facultyDto)));
     }
 
     @Override
-    public FacultyDtoOut getFacultyById(Long id) {
+    public FacultyDto getFacultyById(Long id) {
         return facultyMapper.toDto(facultyRepository.findById(id).orElseThrow(FacultyNotFoundException::new));
     }
 
     @Override
-    public Collection<FacultyDtoOut> getFaculties() {
+    public Collection<FacultyDto> getFaculties() {
         return facultyRepository.findAll().stream()
                 .map(facultyMapper::toDto)
                 .collect(Collectors.toList());
@@ -49,11 +49,11 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     @Transactional
-    public FacultyDtoOut updateFaculty(Long id, FacultyDtoIn facultyDtoIn) {
+    public FacultyDto updateFaculty(Long id, FacultyDto facultyDto) {
         return facultyRepository.findById(id).map(
                         f -> {
-                            f.setName(facultyDtoIn.getName());
-                            f.setColor(facultyDtoIn.getColor());
+                            f.setName(facultyDto.getName());
+                            f.setColor(facultyDto.getColor());
                             return facultyMapper.toDto(facultyRepository.save(f));
                         })
                 .orElseThrow(FacultyNotFoundException::new);
@@ -61,21 +61,21 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     @Transactional
-    public FacultyDtoOut deleteFacultyById(Long id) {
-        FacultyDtoOut facultyDtoOut = getFacultyById(id);
+    public FacultyDto deleteFacultyById(Long id) {
+        FacultyDto facultyDto = getFacultyById(id);
         facultyRepository.deleteById(id);
-        return facultyDtoOut;
+        return facultyDto;
     }
 
     @Override
-    public FacultyDtoOut getFacultyByNameOrColor(String name, String color) {
+    public FacultyDto getFacultyByNameOrColor(String name, String color) {
         return facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(name, color)
                 .map(facultyMapper::toDto)
                 .orElseThrow(FacultyNotFoundException::new);
     }
 
     @Override
-    public Collection<StudentDtoOut> getStudentsByFacultyId(Long id) {
+    public Collection<StudentDto> getStudentsByFacultyId(Long id) {
         return facultyRepository.findById(id).map(
                         faculty -> faculty.getStudents().stream()
                                 .map(studentMapper::toDto)

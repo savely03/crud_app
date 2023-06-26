@@ -3,9 +3,8 @@ package ru.hogwarts.school.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hogwarts.school.dto.FacultyDtoOut;
-import ru.hogwarts.school.dto.StudentDtoIn;
-import ru.hogwarts.school.dto.StudentDtoOut;
+import ru.hogwarts.school.dto.FacultyDto;
+import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.exception.StudentNotFoundException;
 import ru.hogwarts.school.mapper.FacultyMapper;
@@ -32,10 +31,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public StudentDtoOut createStudent(StudentDtoIn studentDtoIn) {
-        return facultyRepository.findById(studentDtoIn.getFacultyId()).map(
+    public StudentDto createStudent(StudentDto studentDto) {
+        return facultyRepository.findById(studentDto.getFacultyId()).map(
                         f -> {
-                            Student student = studentMapper.toEntity(studentDtoIn);
+                            Student student = studentMapper.toEntity(studentDto);
+                            student.setId(0L);
                             student.setFaculty(f);
                             return studentMapper.toDto(studentRepository.save(student));
                         })
@@ -43,12 +43,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public StudentDtoOut getStudentById(Long id) {
+    public StudentDto getStudentById(Long id) {
         return studentMapper.toDto(studentRepository.findById(id).orElseThrow(StudentNotFoundException::new));
     }
 
     @Override
-    public Collection<StudentDtoOut> getStudents() {
+    public Collection<StudentDto> getStudents() {
         return studentRepository.findAll().stream()
                 .map(studentMapper::toDto)
                 .collect(Collectors.toList());
@@ -56,12 +56,12 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public StudentDtoOut updateStudent(Long id, StudentDtoIn studentDtoIn) {
+    public StudentDto updateStudent(Long id, StudentDto studentDto) {
         return studentRepository.findById(id)
                 .map(s -> {
-                    s.setName(studentDtoIn.getName());
-                    s.setAge(studentDtoIn.getAge());
-                    s.setFaculty(facultyRepository.findById(studentDtoIn.getFacultyId())
+                    s.setName(studentDto.getName());
+                    s.setAge(studentDto.getAge());
+                    s.setFaculty(facultyRepository.findById(studentDto.getFacultyId())
                             .orElseThrow(FacultyNotFoundException::new));
                     return studentMapper.toDto(studentRepository.save(s));
                 })
@@ -70,28 +70,28 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public StudentDtoOut deleteStudentById(Long id) {
-        StudentDtoOut studentDtoOut = getStudentById(id);
+    public StudentDto deleteStudentById(Long id) {
+        StudentDto studentDto = getStudentById(id);
         studentRepository.deleteById(id);
-        return studentDtoOut;
+        return studentDto;
     }
 
     @Override
-    public Collection<StudentDtoOut> getStudentsByAge(int age) {
+    public Collection<StudentDto> getStudentsByAge(int age) {
         return studentRepository.findAllByAge(age).stream()
                 .map(studentMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<StudentDtoOut> getStudentsByAgeBetween(int minAge, int maxAge) {
+    public Collection<StudentDto> getStudentsByAgeBetween(int minAge, int maxAge) {
         return studentRepository.findAllByAgeBetween(minAge, maxAge).stream()
                 .map(studentMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public FacultyDtoOut getFacultyByStudentId(Long id) {
+    public FacultyDto getFacultyByStudentId(Long id) {
         return facultyMapper.toDto(studentRepository.findById(id)
                 .map(Student::getFaculty)
                 .orElseThrow(StudentNotFoundException::new));

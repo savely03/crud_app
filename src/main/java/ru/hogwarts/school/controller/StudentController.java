@@ -2,9 +2,8 @@ package ru.hogwarts.school.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.hogwarts.school.dto.FacultyDtoOut;
-import ru.hogwarts.school.dto.StudentDtoIn;
-import ru.hogwarts.school.dto.StudentDtoOut;
+import ru.hogwarts.school.dto.FacultyDto;
+import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.service.StudentService;
 
 import javax.validation.Valid;
@@ -18,42 +17,42 @@ public class StudentController {
     private final StudentService studentService;
 
     @PostMapping
-    public StudentDtoOut createStudent(@Valid @RequestBody StudentDtoIn studentDtoIn) {
-        return studentService.createStudent(studentDtoIn);
+    public StudentDto createStudent(@Valid @RequestBody StudentDto studentDto) {
+        return studentService.createStudent(studentDto);
     }
 
     @GetMapping("/{id}")
-    public StudentDtoOut getStudentById(@PathVariable Long id) {
+    public StudentDto getStudentById(@PathVariable Long id) {
         return studentService.getStudentById(id);
     }
 
     @GetMapping
-    public Collection<StudentDtoOut> getStudents() {
+    public Collection<StudentDto> getStudents() {
         return studentService.getStudents();
     }
 
     @PutMapping("/{id}")
-    public StudentDtoOut updateStudent(@PathVariable Long id, @Valid @RequestBody StudentDtoIn studentDtoIn) {
-        return studentService.updateStudent(id, studentDtoIn);
+    public StudentDto updateStudent(@PathVariable Long id, @Valid @RequestBody StudentDto studentDto) {
+        return studentService.updateStudent(id, studentDto);
     }
 
     @DeleteMapping("/{id}")
-    public StudentDtoOut deleteStudentById(@PathVariable Long id) {
+    public StudentDto deleteStudentById(@PathVariable Long id) {
         return studentService.deleteStudentById(id);
     }
 
     @GetMapping("/filter")
-    public Collection<StudentDtoOut> getStudentsByAge(@RequestParam int age) {
+    public Collection<StudentDto> getStudentsByAge(@RequestParam int age) {
         return studentService.getStudentsByAge(age);
     }
 
     @GetMapping("/between")
-    public Collection<StudentDtoOut> getStudentsByAgeBetween(@RequestParam int minAge, @RequestParam int maxAge) {
+    public Collection<StudentDto> getStudentsByAgeBetween(@RequestParam int minAge, @RequestParam int maxAge) {
         return studentService.getStudentsByAgeBetween(minAge, maxAge);
     }
 
     @GetMapping("/{id}/faculty")
-    public FacultyDtoOut getFacultyByStudentId(@PathVariable Long id) {
+    public FacultyDto getFacultyByStudentId(@PathVariable Long id) {
         return studentService.getFacultyByStudentId(id);
     }
 }
