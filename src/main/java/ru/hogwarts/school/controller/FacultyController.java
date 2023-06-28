@@ -3,8 +3,7 @@ package ru.hogwarts.school.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.dto.FacultyDto;
-import ru.hogwarts.school.mapper.FacultyMapper;
-import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.service.FacultyService;
 
 import javax.validation.Valid;
@@ -16,35 +15,40 @@ import java.util.Collection;
 public class FacultyController {
 
     private final FacultyService facultyService;
-    private final FacultyMapper facultyMapper;
 
     @PostMapping
-    public Faculty createFaculty(@Valid @RequestBody FacultyDto facultyDto) {
-        return facultyService.createFaculty(facultyMapper.toEntity(facultyDto));
+    public FacultyDto createFaculty(@Valid @RequestBody FacultyDto facultyDto) {
+        return facultyService.createFaculty(facultyDto);
     }
 
     @GetMapping("/{id}")
-    public Faculty getFacultyById(@PathVariable Long id) {
+    public FacultyDto getFacultyById(@PathVariable Long id) {
         return facultyService.getFacultyById(id);
     }
 
     @GetMapping
-    public Collection<Faculty> getFaculties() {
+    public Collection<FacultyDto> getFaculties() {
         return facultyService.getFaculties();
     }
 
-    @PutMapping
-    public Faculty updateFaculty(@Valid @RequestBody FacultyDto facultyDto) {
-        return facultyService.updateFaculty(facultyMapper.toEntity(facultyDto));
+    @PutMapping("/{id}")
+    public FacultyDto updateFaculty(@PathVariable Long id, @Valid @RequestBody FacultyDto facultyDto) {
+        return facultyService.updateFaculty(id, facultyDto);
     }
 
     @DeleteMapping("/{id}")
-    public Faculty deleteFacultyById(@PathVariable Long id) {
+    public FacultyDto deleteFacultyById(@PathVariable Long id) {
         return facultyService.deleteFacultyById(id);
     }
 
-    @GetMapping("/color/{color}")
-    public Collection<Faculty> getFacultiesByColor(@PathVariable String color) {
-        return facultyService.getFacultiesByColor(color);
+    @GetMapping("/filter")
+    public FacultyDto getFacultyByNameOrColor(@RequestParam(required = false) String name,
+                                              @RequestParam(required = false) String color) {
+        return facultyService.getFacultyByNameOrColor(name, color);
+    }
+
+    @GetMapping("/{id}/students")
+    public Collection<StudentDto> getStudentsByFacultyId(@PathVariable Long id) {
+        return facultyService.getStudentsByFacultyId(id);
     }
 }

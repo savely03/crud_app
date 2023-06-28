@@ -1,7 +1,14 @@
 package ru.hogwarts.school.exception;
 
-public class FacultyNotFoundException extends RuntimeException {
-    public FacultyNotFoundException(String message) {
-        super(message);
+import org.springframework.http.HttpStatus;
+
+public class FacultyNotFoundException extends TypicalException {
+    public FacultyNotFoundException() {
+        super(HttpStatus.NOT_FOUND);
     }
+    @Override
+    public String getMessage() {
+        return "Данный факультет не найден";
+    }
+
 }

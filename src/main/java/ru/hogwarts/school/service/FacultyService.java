@@ -1,21 +1,24 @@
 package ru.hogwarts.school.service;
 
-import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.dto.FacultyDto;
+import ru.hogwarts.school.dto.StudentDto;
 
 import java.util.Collection;
 
 public interface FacultyService {
 
-    Faculty createFaculty(Faculty faculty);
+    FacultyDto createFaculty(FacultyDto facultyDto);
 
-    Faculty getFacultyById(Long id);
+    FacultyDto getFacultyById(Long id);
 
-    Collection<Faculty> getFaculties();
+    Collection<FacultyDto> getFaculties();
 
-    Faculty updateFaculty(Faculty faculty);
+    FacultyDto updateFaculty(Long id, FacultyDto facultyDto);
 
-    Faculty deleteFacultyById(Long id);
+    FacultyDto deleteFacultyById(Long id);
 
-    Collection<Faculty> getFacultiesByColor(String color);
+    FacultyDto getFacultyByNameOrColor(String name, String color);
+
+    Collection<StudentDto> getStudentsByFacultyId(Long id);
 
 }
