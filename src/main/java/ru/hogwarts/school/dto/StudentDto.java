@@ -15,8 +15,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class StudentDto {
 
-    @Min(value = 0, message = "Id cannot be 0")
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Name is not filled in")
     private String name;
