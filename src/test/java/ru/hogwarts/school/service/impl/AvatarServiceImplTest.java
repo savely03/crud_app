@@ -2,11 +2,14 @@ package ru.hogwarts.school.service.impl;
 
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import ru.hogwarts.school.entity.Avatar;
@@ -41,9 +44,7 @@ class AvatarServiceImplTest {
     @Autowired
     private FacultyRepository facultyRepository;
 
-    private final MockMultipartFile multipartFile = new MockMultipartFile(
-            "foo", "foo.txt", MediaType.TEXT_PLAIN_VALUE, "hello".getBytes()
-    );
+    private static MockMultipartFile multipartFile;
 
     @Autowired
     private AvatarService avatarService;
@@ -53,11 +54,17 @@ class AvatarServiceImplTest {
 
     private Student student;
 
+    @BeforeAll
+    static void init() throws IOException {
+        Resource resource = new ClassPathResource("/images/supra-turbo.jpg");
+        multipartFile = new MockMultipartFile(
+                "supra", resource.getFilename(),
+                MediaType.MULTIPART_FORM_DATA_VALUE,
+                resource.getInputStream());
+    }
+
     @BeforeEach
     void setUp() {
-        avatarRepository.deleteAll();
-        studentRepository.deleteAll();
-        facultyRepository.deleteAll();
         Faculty faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
         student = studentRepository.save(Student.builder().name("student").age(21).faculty(faculty).build());
     }
@@ -105,6 +112,9 @@ class AvatarServiceImplTest {
 
     @AfterEach
     void cleanUp() throws IOException {
+        avatarRepository.deleteAll();
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
         FileUtils.deleteDirectory(new File(testDir));
     }
 }

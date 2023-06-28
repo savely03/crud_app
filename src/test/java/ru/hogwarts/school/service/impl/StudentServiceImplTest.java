@@ -1,5 +1,6 @@
 package ru.hogwarts.school.service.impl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.exception.StudentNotFoundException;
 import ru.hogwarts.school.entity.Faculty;
-import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
@@ -30,8 +30,6 @@ class StudentServiceImplTest {
     @Autowired
     private FacultyRepository facultyRepository;
 
-    @Autowired
-    private AvatarRepository avatarRepository;
 
     private StudentDto studentDto;
     private StudentDto studentDtoSecond;
@@ -40,10 +38,6 @@ class StudentServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        avatarRepository.deleteAll();
-        studentRepository.deleteAll();
-        facultyRepository.deleteAll();
-
         faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
         studentDto = StudentDto.builder().name("studentIn").age(20).facultyId(faculty.getId()).build();
         studentDtoSecond = StudentDto.builder().name("studentInS").age(21).facultyId(faculty.getId()).build();
@@ -143,5 +137,11 @@ class StudentServiceImplTest {
                 .usingRecursiveComparison()
                 .ignoringFields("students")
                 .isEqualTo(faculty);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
     }
 }

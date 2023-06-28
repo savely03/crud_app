@@ -1,5 +1,6 @@
 package ru.hogwarts.school.service.impl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,6 @@ class FacultyServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        facultyRepository.deleteAll();
-        studentRepository.deleteAll();
         facultyDto = FacultyDto.builder().name("name1").color("color1").build();
         facultyDtoSecond = FacultyDto.builder().name("name2").color("color2").build();
         studentDto = StudentDto.builder().name("student").age(21).build();
@@ -146,5 +145,11 @@ class FacultyServiceImplTest {
         StudentDto studentDtoOut = studentService.createStudent(studentDto);
 
         assertThat(facultyService.getStudentsByFacultyId(facultyDtoOut.getId())).containsOnly(studentDtoOut);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        facultyRepository.deleteAll();
+        studentRepository.deleteAll();
     }
 }
