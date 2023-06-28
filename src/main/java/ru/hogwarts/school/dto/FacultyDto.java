@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 
@@ -15,8 +14,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class FacultyDto {
 
-    @Min(value = 0, message = "Id cannot be 0")
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Name is not filled in")
     private String name;

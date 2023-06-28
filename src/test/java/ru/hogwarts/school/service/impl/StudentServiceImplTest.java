@@ -1,5 +1,6 @@
 package ru.hogwarts.school.service.impl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ class StudentServiceImplTest {
     @Autowired
     private FacultyRepository facultyRepository;
 
+
     private StudentDto studentDto;
     private StudentDto studentDtoSecond;
     private Faculty faculty;
@@ -36,8 +38,6 @@ class StudentServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        studentRepository.deleteAll();
-        facultyRepository.deleteAll();
         faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
         studentDto = StudentDto.builder().name("studentIn").age(20).facultyId(faculty.getId()).build();
         studentDtoSecond = StudentDto.builder().name("studentInS").age(21).facultyId(faculty.getId()).build();
@@ -137,5 +137,11 @@ class StudentServiceImplTest {
                 .usingRecursiveComparison()
                 .ignoringFields("students")
                 .isEqualTo(faculty);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
     }
 }
