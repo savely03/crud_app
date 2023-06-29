@@ -1,6 +1,8 @@
 package ru.hogwarts.school.controller;
 
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,63 +30,65 @@ public class StudentController {
     private final AvatarService avatarService;
 
     @PostMapping
-    public StudentDto createStudent(@Valid @RequestBody StudentDto studentDto) {
-        return studentService.createStudent(studentDto);
+    public ResponseEntity<StudentDto> createStudent(@Valid @RequestBody StudentDto studentDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createStudent(studentDto));
     }
 
     @GetMapping("/{id}")
-    public StudentDto getStudentById(@PathVariable Long id) {
-        return studentService.getStudentById(id);
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable Long id) {
+        return ResponseEntity.ok().body(studentService.getStudentById(id));
     }
 
     @GetMapping
-    public Collection<StudentDto> getStudents() {
-        return studentService.getStudents();
+    public ResponseEntity<Collection<StudentDto>> getStudents() {
+        return ResponseEntity.ok().body(studentService.getStudents());
     }
 
     @PutMapping("/{id}")
-    public StudentDto updateStudent(@PathVariable Long id, @Valid @RequestBody StudentDto studentDto) {
-        return studentService.updateStudent(id, studentDto);
+    public ResponseEntity<StudentDto> updateStudent(@PathVariable Long id, @Valid @RequestBody StudentDto studentDto) {
+        return ResponseEntity.ok().body(studentService.updateStudent(id, studentDto));
     }
 
     @DeleteMapping("/{id}")
-    public StudentDto deleteStudentById(@PathVariable Long id) {
-        return studentService.deleteStudentById(id);
+    public ResponseEntity<StudentDto> deleteStudentById(@PathVariable Long id) {
+        return ResponseEntity.ok().body(studentService.deleteStudentById(id));
     }
 
     @GetMapping("/filter")
-    public Collection<StudentDto> getStudentsByAge(@RequestParam int age) {
-        return studentService.getStudentsByAge(age);
+    public ResponseEntity<Collection<StudentDto>> getStudentsByAge(@RequestParam int age) {
+        return ResponseEntity.ok().body(studentService.getStudentsByAge(age));
     }
 
     @GetMapping("/between")
-    public Collection<StudentDto> getStudentsByAgeBetween(@RequestParam int minAge, @RequestParam int maxAge) {
-        return studentService.getStudentsByAgeBetween(minAge, maxAge);
+    public ResponseEntity<Collection<StudentDto>> getStudentsByAgeBetween(@RequestParam int minAge, @RequestParam int maxAge) {
+        return ResponseEntity.ok().body(studentService.getStudentsByAgeBetween(minAge, maxAge));
     }
 
     @GetMapping("/{id}/faculty")
-    public FacultyDto getFacultyByStudentId(@PathVariable Long id) {
-        return studentService.getFacultyByStudentId(id);
+    public ResponseEntity<FacultyDto> getFacultyByStudentId(@PathVariable Long id) {
+        return ResponseEntity.ok().body(studentService.getFacultyByStudentId(id));
     }
 
 
-    @PostMapping(value = "{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> uploadAvatar(@PathVariable Long id, @RequestParam MultipartFile multipartFile) throws IOException {
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> uploadAvatar(@PathVariable Long id,
+                                             @RequestParam("file") MultipartFile multipartFile
+    ) throws IOException {
         avatarService.uploadAvatar(id, multipartFile);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("{id}/avatar-db")
+    @GetMapping("/{id}/avatar-db")
     public ResponseEntity<byte[]> downloadAvatar(@PathVariable Long id) {
         Avatar avatar = avatarService.findAvatarByStudentId(id);
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.parseMediaType(avatar.getMediaType()))
-                .contentLength(avatar.getData().length).body(avatar.getData());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(avatar.getMediaType()));
+        headers.setContentLength(avatar.getData().length);
+        return ResponseEntity.ok().headers(headers).build();
     }
 
 
-    @GetMapping("{id}/avatar")
+    @GetMapping("/{id}/avatar")
     public ResponseEntity<Void> downloadAvatar(@PathVariable Long id, HttpServletResponse response) throws IOException {
         Avatar avatar = avatarService.findAvatarByStudentId(id);
         Path filePath = Path.of(avatar.getFilePath());
