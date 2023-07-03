@@ -29,4 +29,5 @@ public class Avatar {
     @OneToOne
     @JoinColumn(name = "student_id", referencedColumnName = "id")
     private Student student;
+
 }

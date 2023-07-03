@@ -96,4 +96,22 @@ public class StudentServiceImpl implements StudentService {
                 .map(Student::getFaculty)
                 .orElseThrow(StudentNotFoundException::new));
     }
+
+    @Override
+    public int getCountOfStudents() {
+        return studentRepository.getCountOfStudents();
+    }
+
+    @Override
+    public double getAvgAgeOfStudents() {
+        return studentRepository.getAvgAgeOfStudents();
+    }
+
+    @Override
+    public Collection<StudentDto> getLastFiveStudents() {
+        return studentRepository.getLastFiveStudents()
+                .stream()
+                .map(studentMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

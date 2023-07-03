@@ -1,5 +1,6 @@
 package ru.hogwarts.school.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +23,7 @@ import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.entity.Avatar;
 import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.entity.Student;
+import ru.hogwarts.school.mapper.AvatarMapperImpl;
 import ru.hogwarts.school.mapper.FacultyMapperImpl;
 import ru.hogwarts.school.mapper.StudentMapperImpl;
 import ru.hogwarts.school.repository.AvatarRepository;
@@ -33,7 +35,11 @@ import ru.hogwarts.school.service.impl.StudentServiceImpl;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -64,6 +70,9 @@ class StudentControllerWebMvcTest {
     @SpyBean
     private FacultyMapperImpl facultyMapper;
 
+    @SpyBean
+    private AvatarMapperImpl avatarMapper;
+
     @MockBean
     private StudentRepository studentRepository;
 
@@ -80,10 +89,12 @@ class StudentControllerWebMvcTest {
     private static Student student;
     private static Faculty faculty;
 
+    private static Faker faker;
+
 
     @BeforeAll
     static void init() {
-        Faker faker = new Faker();
+        faker = new Faker();
         faculty = Faculty.builder().id(1L).name(faker.harryPotter().house()).color(faker.color().name()).build();
         studentDto = StudentDto.builder().name(faker.name().firstName()).age(faker.random().nextInt(100))
                 .facultyId(faculty.getId()).build();
@@ -309,5 +320,55 @@ class StudentControllerWebMvcTest {
                         .param("id", String.valueOf(student.getId()))
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getCountOfStudentsTest() throws Exception {
+        int studentsCount = ThreadLocalRandom.current().nextInt(100);
+
+        when(studentRepository.getCountOfStudents()).thenReturn(studentsCount);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/count"))
+                .andExpect(status().isOk())
+                .andExpect(result ->
+                        assertThat(Integer.parseInt(result.getResponse().getContentAsString())).isEqualTo(studentsCount));
+
+    }
+
+    @Test
+    void getAvgAgeOfStudentsTest() throws Exception {
+        double studentsCount = ThreadLocalRandom.current().nextDouble(100);
+
+        when(studentRepository.getAvgAgeOfStudents()).thenReturn(studentsCount);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/avg-age"))
+                .andExpect(status().isOk())
+                .andExpect(result ->
+                        assertThat(Double.parseDouble(result.getResponse().getContentAsString())).isEqualTo(studentsCount));
+    }
+
+    @Test
+    void getLastFiveStudents() throws Exception {
+        List<Student> students = generateStudents();
+        when(studentRepository.getLastFiveStudents()).thenReturn(students);
+        List<StudentDto> studentsDto = students.stream().map(studentMapper::toDto).collect(Collectors.toList());
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/last/five"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    List<StudentDto> actual =
+                            objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+                            });
+                    assertThat(actual).hasSize(5);
+                    assertThat(actual).isEqualTo(studentsDto);
+                });
+    }
+
+    private List<Student> generateStudents() {
+        return Stream.iterate(1L, i -> i + 1)
+                .limit(5)
+                .map(id -> Student.builder().id(id).faculty(faculty).name(faker.name()
+                        .firstName()).age(faker.random().nextInt(100)).build())
+                .collect(Collectors.toList());
     }
 }

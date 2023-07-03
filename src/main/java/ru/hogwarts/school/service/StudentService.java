@@ -23,4 +23,9 @@ public interface StudentService {
 
     FacultyDto getFacultyByStudentId(Long id);
 
+    int getCountOfStudents();
+
+    double getAvgAgeOfStudents();
+
+    Collection<StudentDto> getLastFiveStudents();
 }
