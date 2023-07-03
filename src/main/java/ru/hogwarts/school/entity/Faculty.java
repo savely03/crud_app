@@ -3,7 +3,7 @@ package ru.hogwarts.school.entity;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.Set;
 
 
 @AllArgsConstructor
@@ -24,5 +24,5 @@ public class Faculty {
     private String color;
 
     @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
-    private Collection<Student> students;
+    private Set<Student> students;
 }
