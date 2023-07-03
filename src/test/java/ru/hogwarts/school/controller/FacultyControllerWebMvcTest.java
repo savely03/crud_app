@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.hogwarts.school.dto.FacultyDto;
@@ -23,8 +23,8 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.service.impl.FacultyServiceImpl;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = FacultyController.class)
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(locations="classpath:application-test.properties")
 class FacultyControllerWebMvcTest {
 
     private static final String ROOT = "/faculty";
@@ -62,13 +61,15 @@ class FacultyControllerWebMvcTest {
     private static Faculty faculty;
     private static Student student;
 
+    private static final Faker faker = new Faker();
+
 
     @BeforeAll
     static void init() {
-        student = Student.builder().id(1L).name("student").age(21).build();
-        facultyDto = FacultyDto.builder().name("faculty").color("red").build();
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).build();
+        facultyDto = FacultyDto.builder().name(faker.harryPotter().house()).color(faker.color().name()).build();
         faculty = Faculty.builder().id(1L).name(facultyDto.getName()).color(facultyDto.getColor())
-                .students(List.of(student)).build();
+                .students(Set.of(student)).build();
     }
 
     @Test
@@ -86,6 +87,7 @@ class FacultyControllerWebMvcTest {
                 .andExpect(jsonPath("$.id").value(faculty.getId()))
                 .andExpect(jsonPath("$.name").value(faculty.getName()))
                 .andExpect(jsonPath("$.color").value(faculty.getColor()));
+
     }
 
     @Test

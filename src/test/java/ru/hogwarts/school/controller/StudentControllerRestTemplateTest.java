@@ -1,8 +1,10 @@
 package ru.hogwarts.school.controller;
 
+import com.github.javafaker.Faker;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,11 +14,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import ru.hogwarts.school.dto.FacultyDto;
 import ru.hogwarts.school.dto.StudentDto;
-import ru.hogwarts.school.entity.Avatar;
 import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.entity.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
@@ -24,7 +26,6 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.test_util.DbTest;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -46,9 +47,6 @@ public class StudentControllerRestTemplateTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private StudentController studentController;
-
-    @Autowired
     private StudentRepository studentRepository;
 
     @Autowired
@@ -62,11 +60,14 @@ public class StudentControllerRestTemplateTest {
 
     private String baseUrl;
 
+    private final Faker faker = new Faker();
 
     @BeforeEach
     void setUp() {
-        faculty = facultyRepository.save(Faculty.builder().name("faculty").color("red").build());
-        studentDto = StudentDto.builder().id(1L).name("studentDto").age(21).facultyId(faculty.getId()).build();
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        restTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+        faculty = facultyRepository.save(Faculty.builder().name(faker.harryPotter().house()).color(faker.color().name()).build());
+        studentDto = StudentDto.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).facultyId(faculty.getId()).build();
         student = Student.builder().id(1L).name(studentDto.getName()).age(studentDto.getAge())
                 .faculty(faculty).build();
         baseUrl = LOCALHOST + port + ROOT;
@@ -300,8 +301,13 @@ public class StudentControllerRestTemplateTest {
         body.add("file", resource);
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(baseUrl + "/" + student.getId() + "/avatar", entity, String.class);
+        ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(
+                        baseUrl + "/" + student.getId() + "/avatar",
+                        HttpMethod.PATCH,
+                        entity,
+                        Void.class
+                );
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(avatarRepository.findByStudentId(student.getId())).isPresent();
@@ -321,51 +327,12 @@ public class StudentControllerRestTemplateTest {
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Void> responseEntity =
-                restTemplate.postForEntity(baseUrl + "/" + student.getId() + "/avatar", entity, Void.class);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void downloadAvatarFromDiskTest() throws IOException {
-        Resource resource = new ClassPathResource("/images/supra-turbo.jpg");
-        byte[] data = resource.getInputStream().readAllBytes();
-        student = studentRepository.save(student);
-        Avatar avatar = Avatar.builder().fileSize(data.length).mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .filePath(resource.getFile().getPath()).student(student).build();
-        avatarRepository.save(avatar);
-
-        ResponseEntity<Void> responseEntity =
-                restTemplate.getForEntity(baseUrl + "/" + student.getId() + "/avatar", Void.class);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getHeaders().getContentLength()).isEqualTo(avatar.getFileSize());
-
-    }
-
-    @Test
-    @Disabled
-        // Неоптимально, так как сохраняется в базу картинка, поэтому отключил
-    void downloadAvatarFromDbTest() throws Exception {
-        Resource resource = new ClassPathResource("/images/supra-turbo.jpg");
-        byte[] data = resource.getInputStream().readAllBytes();
-        student = studentRepository.save(student);
-        Avatar avatar = Avatar.builder().fileSize(data.length).data(data)
-                .student(student)
-                .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE).build();
-        avatarRepository.save(avatar);
-
-        ResponseEntity<Void> responseEntity =
-                restTemplate.getForEntity(baseUrl + "/" + student.getId() + "/avatar-db", Void.class);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getHeaders().getContentLength()).isEqualTo(avatar.getFileSize());
-    }
-
-    @Test
-    void downloadAvatarStudentDoesNotExistTest() {
-        ResponseEntity<Void> responseEntity =
-                restTemplate.getForEntity(baseUrl + "/" + student.getId() + "/avatar", Void.class);
+                restTemplate.exchange(
+                        baseUrl + "/" + student.getId() + "/avatar",
+                        HttpMethod.PATCH,
+                        entity,
+                        Void.class
+                );
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }

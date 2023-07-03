@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,9 +13,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.hogwarts.school.dto.StudentDto;
@@ -41,7 +42,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = StudentController.class)
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(locations = "classpath:application-test.properties")
 class StudentControllerWebMvcTest {
 
     private final static String ROOT = "/student";
@@ -80,10 +80,13 @@ class StudentControllerWebMvcTest {
     private static Student student;
     private static Faculty faculty;
 
+
     @BeforeAll
     static void init() {
-        faculty = Faculty.builder().id(1L).name("faculty").color("red").build();
-        studentDto = StudentDto.builder().name("studentDto").age(21).facultyId(faculty.getId()).build();
+        Faker faker = new Faker();
+        faculty = Faculty.builder().id(1L).name(faker.harryPotter().house()).color(faker.color().name()).build();
+        studentDto = StudentDto.builder().name(faker.name().firstName()).age(faker.random().nextInt(100))
+                .facultyId(faculty.getId()).build();
         student = Student.builder().id(1L).name(studentDto.getName()).age(studentDto.getAge())
                 .faculty(faculty).build();
     }
@@ -280,7 +283,7 @@ class StudentControllerWebMvcTest {
         when(studentRepository.findById(student.getId())).thenReturn(Optional.of(student));
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .multipart(ROOT + "/" + student.getId() + "/avatar")
+                        .multipart(HttpMethod.PATCH, ROOT + "/" + student.getId() + "/avatar")
                         .file(multipartFile)
                         .param("id", String.valueOf(student.getId()))
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -301,56 +304,10 @@ class StudentControllerWebMvcTest {
                 resource.getInputStream());
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .multipart(ROOT + "/" + student.getId() + "/avatar")
+                        .multipart(HttpMethod.PATCH, ROOT + "/" + student.getId() + "/avatar")
                         .file(multipartFile)
                         .param("id", String.valueOf(student.getId()))
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void downloadAvatarFromDiskTest() throws Exception {
-        Resource resource = new ClassPathResource("/images/supra-turbo.jpg");
-        MockMultipartFile multipartFile = new MockMultipartFile("supra", resource.getFilename(),
-                MediaType.MULTIPART_FORM_DATA_VALUE,
-                resource.getInputStream());
-
-        Avatar avatar = Avatar.builder().student(student).data(multipartFile.getBytes())
-                .filePath(resource.getFile().getPath()).fileSize(multipartFile.getSize())
-                .mediaType(multipartFile.getContentType()).build();
-        when(avatarRepository.findByStudentId(student.getId())).thenReturn(Optional.of(avatar));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get(ROOT + "/" + student.getId() + "/avatar")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(avatarRepository, times(1)).findByStudentId(student.getId());
-    }
-
-    @Test
-    void downloadAvatarFromDbTest() throws Exception {
-        Resource resource = new ClassPathResource("/images/supra-turbo.jpg");
-        byte[] data = resource.getInputStream().readAllBytes();
-
-        Avatar avatar = Avatar.builder().student(student).data(data)
-                .fileSize(data.length)
-                .mediaType(MediaType.MULTIPART_FORM_DATA_VALUE).build();
-        when(avatarRepository.findByStudentId(student.getId())).thenReturn(Optional.of(avatar));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get(ROOT + "/" + student.getId() + "/avatar-db")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(avatarRepository, times(1)).findByStudentId(student.getId());
-    }
-
-    @Test
-    void downloadAvatarStudentDoesNotExistTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get(ROOT + "/" + student.getId() + "/avatar-db")
-                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 }

@@ -22,4 +22,5 @@ public interface StudentService {
     Collection<StudentDto> getStudentsByAgeBetween(int minAge, int maxAge);
 
     FacultyDto getFacultyByStudentId(Long id);
+
 }

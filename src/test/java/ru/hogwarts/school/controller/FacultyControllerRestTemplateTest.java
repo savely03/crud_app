@@ -1,5 +1,6 @@
 package ru.hogwarts.school.controller;
 
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,9 +37,6 @@ public class FacultyControllerRestTemplateTest {
     private static final String ROOT = "/faculty";
 
     @Autowired
-    private FacultyController facultyController;
-
-    @Autowired
     private FacultyRepository facultyRepository;
 
     @Autowired
@@ -54,10 +52,12 @@ public class FacultyControllerRestTemplateTest {
 
     private String baseUrl;
 
+    private final Faker faker = new Faker();
+
     @BeforeEach
     void setUp() {
-        student = Student.builder().id(1L).name("student").age(21).build();
-        facultyDto = FacultyDto.builder().name("faculty").color("red").build();
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).build();
+        facultyDto = FacultyDto.builder().name(faker.harryPotter().house()).color(faker.color().name()).build();
         faculty = Faculty.builder().id(1L).name(facultyDto.getName()).color(facultyDto.getColor()).build();
         baseUrl = LOCALHOST + port + ROOT;
     }
