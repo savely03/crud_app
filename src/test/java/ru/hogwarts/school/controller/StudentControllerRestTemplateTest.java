@@ -21,6 +21,7 @@ import ru.hogwarts.school.dto.FacultyDto;
 import ru.hogwarts.school.dto.StudentDto;
 import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.entity.Student;
+import ru.hogwarts.school.mapper.StudentMapper;
 import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
@@ -29,6 +30,8 @@ import ru.hogwarts.school.test_util.DbTest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,6 +57,9 @@ public class StudentControllerRestTemplateTest {
 
     @Autowired
     private AvatarRepository avatarRepository;
+
+    @Autowired
+    private StudentMapper studentMapper;
     private StudentDto studentDto;
     private Student student;
     private Faculty faculty;
@@ -335,6 +341,57 @@ public class StudentControllerRestTemplateTest {
                 );
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void getCountOfStudentsTest() {
+        List<Student> students = createStudents();
+
+        ResponseEntity<Integer> responseEntity = restTemplate.getForEntity(baseUrl + "/count", Integer.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).isEqualTo(students.size());
+    }
+
+    @Test
+    void getAvgAgeOfStudentsTest() {
+        List<Student> students = createStudents();
+        double avg = students.stream().mapToInt(Student::getAge).average().getAsDouble();
+
+        ResponseEntity<Double> responseEntity = restTemplate.getForEntity(baseUrl + "/avg-age", Double.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).isEqualTo(avg);
+    }
+
+    @Test
+    void getLastFiveStudents() {
+        List<Student> students = createStudents();
+        List<StudentDto> lastFiveStudents = students.subList(students.size() - 5, students.size())
+                .stream()
+                .map(studentMapper::toDto)
+                .collect(Collectors.toList());
+
+        ResponseEntity<List<StudentDto>> responseEntity = restTemplate.exchange(
+                baseUrl + "/last/five",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                });
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).hasSize(5);
+        assertThat(responseEntity.getBody()).isEqualTo(lastFiveStudents);
+
+    }
+
+
+    private List<Student> createStudents() {
+        return studentRepository.saveAll(Stream.generate(() ->
+                        Student.builder().name(faker.name().firstName()).faculty(faculty)
+                                .age(faker.random().nextInt(100)).build())
+                .limit(10).collect(Collectors.toList()));
     }
 
     @AfterEach

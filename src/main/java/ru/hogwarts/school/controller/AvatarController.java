@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.dto.AvatarDto;
 import ru.hogwarts.school.service.AvatarService;
+
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/avatar")
@@ -34,5 +34,10 @@ public class AvatarController {
                 .contentType(MediaType.parseMediaType(pair.getSecond()))
                 .contentLength(pair.getFirst().length)
                 .body(pair.getFirst());
+    }
+
+    @GetMapping
+    public ResponseEntity<Collection<AvatarDto>> findAllAvatars(@RequestParam Integer page, @RequestParam Integer size) {
+        return ResponseEntity.ok(avatarService.findAllAvatars(page, size));
     }
 }
