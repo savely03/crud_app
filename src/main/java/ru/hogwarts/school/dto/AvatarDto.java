@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class AvatarDto {
     private Long id;
     private Long studentId;
+    private String urlImage;
 }
