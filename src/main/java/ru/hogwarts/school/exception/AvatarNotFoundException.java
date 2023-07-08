@@ -9,6 +9,6 @@ public class AvatarNotFoundException extends TypicalException {
 
     @Override
     public String getMessage() {
-        return "Данный автар не найден";
+        return "Данный аватар не найден";
     }
 }
