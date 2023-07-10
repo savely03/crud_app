@@ -2,6 +2,8 @@ package ru.hogwarts.school.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.web.util.UriComponentsBuilder;
+import ru.hogwarts.school.controller.AvatarController;
 import ru.hogwarts.school.dto.AvatarDto;
 import ru.hogwarts.school.entity.Avatar;
 import ru.hogwarts.school.entity.Student;
@@ -15,6 +17,11 @@ public interface AvatarMapper {
     Avatar toEntity(AvatarDto avatarDto);
 
     default String setUrlImage(Student student) {
-        return "http://localhost:8080/avatar/" + student.getId();
+        return UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host("localhost")
+                .port(8080)
+                .pathSegment(AvatarController.ROOT, student.getId().toString())
+                .toUriString();
     }
 }
