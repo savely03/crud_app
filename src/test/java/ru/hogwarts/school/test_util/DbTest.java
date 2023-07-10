@@ -2,6 +2,7 @@ package ru.hogwarts.school.test_util;
 
 
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,6 +10,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 //@TestPropertySource(locations="classpath:application-test.properties")
-//@ActiveProfiles("testcontainers")
+@ActiveProfiles("testcontainers")
 public @interface DbTest {
 }

@@ -21,6 +21,7 @@ import ru.hogwarts.school.mapper.FacultyMapperImpl;
 import ru.hogwarts.school.mapper.StudentMapperImpl;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.service.impl.FacultyServiceImpl;
+import ru.hogwarts.school.test_util.DbTest;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = FacultyController.class)
 @ExtendWith(MockitoExtension.class)
+@DbTest
 class FacultyControllerWebMvcTest {
 
     private static final String ROOT = "/faculty";
@@ -66,7 +68,7 @@ class FacultyControllerWebMvcTest {
 
     @BeforeAll
     static void init() {
-        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).build();
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(16, 100)).build();
         facultyDto = FacultyDto.builder().name(faker.harryPotter().house()).color(faker.color().name()).build();
         faculty = Faculty.builder().id(1L).name(facultyDto.getName()).color(facultyDto.getColor())
                 .students(Set.of(student)).build();

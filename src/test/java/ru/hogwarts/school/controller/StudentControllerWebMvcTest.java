@@ -31,6 +31,7 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.impl.AvatarServiceImpl;
 import ru.hogwarts.school.service.impl.StudentServiceImpl;
+import ru.hogwarts.school.test_util.DbTest;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = StudentController.class)
 @ExtendWith(MockitoExtension.class)
+@DbTest
 class StudentControllerWebMvcTest {
 
     private final static String ROOT = "/student";
@@ -96,7 +98,7 @@ class StudentControllerWebMvcTest {
     static void init() {
         faker = new Faker();
         faculty = Faculty.builder().id(1L).name(faker.harryPotter().house()).color(faker.color().name()).build();
-        studentDto = StudentDto.builder().name(faker.name().firstName()).age(faker.random().nextInt(100))
+        studentDto = StudentDto.builder().name(faker.name().firstName()).age(faker.random().nextInt(16, 100))
                 .facultyId(faculty.getId()).build();
         student = Student.builder().id(1L).name(studentDto.getName()).age(studentDto.getAge())
                 .faculty(faculty).build();
@@ -368,7 +370,7 @@ class StudentControllerWebMvcTest {
         return Stream.iterate(1L, i -> i + 1)
                 .limit(5)
                 .map(id -> Student.builder().id(id).faculty(faculty).name(faker.name()
-                        .firstName()).age(faker.random().nextInt(100)).build())
+                        .firstName()).age(faker.random().nextInt(16, 100)).build())
                 .collect(Collectors.toList());
     }
 }

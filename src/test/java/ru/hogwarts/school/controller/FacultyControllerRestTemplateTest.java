@@ -56,7 +56,7 @@ public class FacultyControllerRestTemplateTest {
 
     @BeforeEach
     void setUp() {
-        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).build();
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(16, 100)).build();
         facultyDto = FacultyDto.builder().name(faker.harryPotter().house()).color(faker.color().name()).build();
         faculty = Faculty.builder().id(1L).name(facultyDto.getName()).color(facultyDto.getColor()).build();
         baseUrl = LOCALHOST + port + ROOT;

@@ -27,6 +27,7 @@ import ru.hogwarts.school.mapper.AvatarMapperImpl;
 import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.impl.AvatarServiceImpl;
+import ru.hogwarts.school.test_util.DbTest;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = AvatarController.class)
 @ExtendWith(MockitoExtension.class)
+@DbTest
 public class AvatarControllerWebMvcTest {
 
     private static final String ROOT = "/avatar";
@@ -70,7 +72,7 @@ public class AvatarControllerWebMvcTest {
     static void setUp() throws IOException {
         Resource resource = new ClassPathResource("images/supra-turbo.jpg");
         Faker faker = new Faker();
-        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).build();
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(16, 100)).build();
         avatar = Avatar.builder().id(1L).student(student).mediaType(MediaType.MULTIPART_FORM_DATA_VALUE)
                 .filePath(resource.getFile().getPath()).fileSize(resource.contentLength())
                 .data(resource.getInputStream().readAllBytes()).build();
