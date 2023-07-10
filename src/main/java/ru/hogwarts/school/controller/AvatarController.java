@@ -15,6 +15,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class AvatarController {
 
+    public static final String ROOT = "avatar";
+
     private final AvatarService avatarService;
 
     @GetMapping("/{id}/db")
