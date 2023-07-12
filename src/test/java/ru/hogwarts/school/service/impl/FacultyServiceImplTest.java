@@ -127,14 +127,14 @@ class FacultyServiceImplTest {
     void getFacultyByNameOrColorTest() {
         FacultyDto facultyDtoOut = facultyService.createFaculty(facultyDto);
 
-        assertThat(facultyService.getFacultyByNameOrColor(facultyDtoOut.getName(), facultyDtoOut.getColor()))
+        assertThat(facultyService.getFacultyByNameAndColor(facultyDtoOut.getName(), facultyDtoOut.getColor()))
                 .isEqualTo(facultyDtoOut);
     }
 
     @Test
     void getFacultyByNameOrColorWhenFacultyDoesNotExistTest() {
         assertThatExceptionOfType(FacultyNotFoundException.class).isThrownBy(
-                () -> facultyService.getFacultyByNameOrColor(facultyDto.getName(), facultyDto.getColor())
+                () -> facultyService.getFacultyByNameAndColor(facultyDto.getName(), facultyDto.getColor())
         );
     }
 

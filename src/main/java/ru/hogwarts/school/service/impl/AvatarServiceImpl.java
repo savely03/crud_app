@@ -2,6 +2,8 @@ package ru.hogwarts.school.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
@@ -35,17 +37,24 @@ public class AvatarServiceImpl implements AvatarService {
     private final StudentRepository studentRepository;
     private final AvatarMapper avatarMapper;
 
+    Logger logger = LoggerFactory.getLogger(AvatarServiceImpl.class);
+
     @Value("${path.to.avatars.folder}")
     private String avatarDir;
 
     private Avatar findOrCreateAvatarByStudentId(Long studentId) {
+        logger.info("Was invoked method for finding or creating avatar");
         return avatarRepository.findByStudentId(studentId).orElse(new Avatar());
     }
 
     @Override
     @Transactional
     public void uploadAvatar(Long studentId, MultipartFile multipartFile) throws IOException {
-        Student student = studentRepository.findById(studentId).orElseThrow(StudentNotFoundException::new);
+        logger.info("Was invoked method for uploading avatar");
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> {
+            logger.warn("Student doesn't exist");
+            return new StudentNotFoundException();
+        });
 
         Path filePath = Path.of(avatarDir,
                 student.getId() + "." + StringUtils.getFilenameExtension(multipartFile.getOriginalFilename()));
@@ -77,16 +86,22 @@ public class AvatarServiceImpl implements AvatarService {
 
     @Override
     public Avatar findAvatarByStudentId(Long studentId) {
-        return avatarRepository.findByStudentId(studentId).orElseThrow(AvatarNotFoundException::new);
+        logger.info("Was invoked method for finding avatar");
+        return avatarRepository.findByStudentId(studentId).orElseThrow(() -> {
+            logger.warn("Avatar doesn't exist");
+            return new AvatarNotFoundException();
+        });
     }
 
     @Override
     public Collection<AvatarDto> findAllAvatars(Integer page, Integer size) {
+        logger.info("Was invoked method for finding all avatars");
         if (page <= 0 || size <= 0) {
+            logger.warn("Page or size are incorrect");
             throw new PaginationException();
         }
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        return avatarRepository.findAll(pageRequest).getContent()
+        return avatarRepository.findAll(PageRequest.of(page - 1, size))
+                .getContent()
                 .stream()
                 .map(avatarMapper::toDto)
                 .collect(Collectors.toList());
