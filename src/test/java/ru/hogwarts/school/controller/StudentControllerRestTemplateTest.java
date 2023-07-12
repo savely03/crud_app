@@ -73,7 +73,7 @@ public class StudentControllerRestTemplateTest {
         HttpClient httpClient = HttpClientBuilder.create().build();
         restTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
         faculty = facultyRepository.save(Faculty.builder().name(faker.harryPotter().house()).color(faker.color().name()).build());
-        studentDto = StudentDto.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100)).facultyId(faculty.getId()).build();
+        studentDto = StudentDto.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(16, 100)).facultyId(faculty.getId()).build();
         student = Student.builder().id(1L).name(studentDto.getName()).age(studentDto.getAge())
                 .faculty(faculty).build();
         baseUrl = LOCALHOST + port + ROOT;
@@ -348,6 +348,7 @@ public class StudentControllerRestTemplateTest {
         List<Student> students = createStudents();
 
         ResponseEntity<Integer> responseEntity = restTemplate.getForEntity(baseUrl + "/count", Integer.class);
+
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isEqualTo(students.size());
@@ -356,9 +357,10 @@ public class StudentControllerRestTemplateTest {
     @Test
     void getAvgAgeOfStudentsTest() {
         List<Student> students = createStudents();
-        double avg = students.stream().mapToInt(Student::getAge).average().getAsDouble();
+        double avg = students.stream().mapToInt(Student::getAge).sum() / (double) students.size();
 
         ResponseEntity<Double> responseEntity = restTemplate.getForEntity(baseUrl + "/avg-age", Double.class);
+
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isEqualTo(avg);
@@ -383,14 +385,13 @@ public class StudentControllerRestTemplateTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).hasSize(5);
         assertThat(responseEntity.getBody()).isEqualTo(lastFiveStudents);
-
     }
 
 
     private List<Student> createStudents() {
         return studentRepository.saveAll(Stream.generate(() ->
                         Student.builder().name(faker.name().firstName()).faculty(faculty)
-                                .age(faker.random().nextInt(100)).build())
+                                .age(faker.random().nextInt(16, 100)).build())
                 .limit(10).collect(Collectors.toList()));
     }
 

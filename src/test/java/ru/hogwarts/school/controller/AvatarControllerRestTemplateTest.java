@@ -74,7 +74,7 @@ class AvatarControllerRestTemplateTest {
         HttpClient httpClient = HttpClientBuilder.create().build();
         restTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
         faculty = facultyRepository.save(Faculty.builder().name(faker.harryPotter().house()).color(faker.color().name()).build());
-        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(100))
+        student = Student.builder().id(1L).name(faker.name().firstName()).age(faker.random().nextInt(16, 100))
                 .faculty(faculty).build();
         baseUrl = LOCALHOST + port + ROOT;
     }
@@ -185,7 +185,7 @@ class AvatarControllerRestTemplateTest {
     private List<Avatar> createAvatars() {
         List<Student> students = studentRepository.saveAll(Stream.generate(() ->
                         Student.builder().name(faker.name().firstName())
-                                .age(faker.random().nextInt(100)).faculty(faculty).build())
+                                .age(faker.random().nextInt(16, 100)).faculty(faculty).build())
                 .limit(10)
                 .collect(Collectors.toList()));
 

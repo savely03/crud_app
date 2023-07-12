@@ -16,18 +16,24 @@ import javax.persistence.*;
 public class Avatar {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @Column(name = "file_path")
     private String filePath;
+
+    @Column(name = "file_size")
     private long fileSize;
+
+    @Column(name = "media_type")
     private String mediaType;
 
     @Lob
     @Type(type = "binary")
+    @Column(name = "data")
     private byte[] data;
-
 
     @OneToOne
     @JoinColumn(name = "student_id", referencedColumnName = "id")
     private Student student;
-
 }

@@ -15,12 +15,13 @@ import java.util.Set;
 public class Faculty {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(unique = true)
+    @Column(name = "name")
     private String name;
 
-    @Column(unique = true)
+    @Column(name = "color")
     private String color;
 
     @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
