@@ -1,6 +1,5 @@
 package ru.hogwarts.school.controller;
 
-import liquibase.pro.packaged.G;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

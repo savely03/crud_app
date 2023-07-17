@@ -1,6 +1,5 @@
 package ru.hogwarts.school.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.javafaker.Faker;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
