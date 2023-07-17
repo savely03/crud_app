@@ -17,7 +17,7 @@ public interface FacultyService {
 
     FacultyDto deleteFacultyById(Long id);
 
-    FacultyDto getFacultyByNameOrColor(String name, String color);
+    FacultyDto getFacultyByNameAndColor(String name, String color);
 
     Collection<StudentDto> getStudentsByFacultyId(Long id);
 

@@ -1,6 +1,8 @@
 package ru.hogwarts.school.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hogwarts.school.dto.FacultyDto;
@@ -25,10 +27,14 @@ public class FacultyServiceImpl implements FacultyService {
     private final FacultyMapper facultyMapper;
     private final StudentMapper studentMapper;
 
+    private final Logger logger = LoggerFactory.getLogger(FacultyServiceImpl.class);
+
     @Override
     @Transactional
     public FacultyDto createFaculty(FacultyDto facultyDto) {
-        if (facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(facultyDto.getName(), facultyDto.getColor()).isPresent()) {
+        logger.info("Was invoked method for creating faculty");
+        if (facultyRepository.findByNameIgnoreCaseAndColorIgnoreCase(facultyDto.getName(), facultyDto.getColor()).isPresent()) {
+            logger.warn("Faculty with name - {} and color - {} already added", facultyDto.getName(), facultyDto.getColor());
             throw new FacultyAlreadyAddedException();
         }
         facultyDto.setId(0L);
@@ -37,11 +43,16 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public FacultyDto getFacultyById(Long id) {
-        return facultyMapper.toDto(facultyRepository.findById(id).orElseThrow(FacultyNotFoundException::new));
+        logger.info("Was invoked method for getting faculty by id");
+        return facultyMapper.toDto(facultyRepository.findById(id).orElseThrow(() -> {
+            logger.warn("Faculty with id - {} doesn't exist", id);
+            return new FacultyNotFoundException();
+        }));
     }
 
     @Override
     public Collection<FacultyDto> getFaculties() {
+        logger.info("Was invoked method for getting faculty by id");
         return facultyRepository.findAll().stream()
                 .map(facultyMapper::toDto)
                 .collect(Collectors.toList());
@@ -50,36 +61,49 @@ public class FacultyServiceImpl implements FacultyService {
     @Override
     @Transactional
     public FacultyDto updateFaculty(Long id, FacultyDto facultyDto) {
+        logger.info("Was invoked method for updating faculty");
         return facultyRepository.findById(id).map(
                         f -> {
                             f.setName(facultyDto.getName());
                             f.setColor(facultyDto.getColor());
                             return facultyMapper.toDto(facultyRepository.save(f));
                         })
-                .orElseThrow(FacultyNotFoundException::new);
+                .orElseThrow(() -> {
+                    logger.warn("Faculty with id - {} doesn't exist", id);
+                    return new FacultyNotFoundException();
+                });
     }
 
     @Override
     @Transactional
     public FacultyDto deleteFacultyById(Long id) {
+        logger.info("Was invoked method for deleting faculty");
         FacultyDto facultyDto = getFacultyById(id);
         facultyRepository.deleteById(id);
         return facultyDto;
     }
 
     @Override
-    public FacultyDto getFacultyByNameOrColor(String name, String color) {
-        return facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(name, color)
+    public FacultyDto getFacultyByNameAndColor(String name, String color) {
+        logger.info("Was invoked method for getting faculty by name and color");
+        return facultyRepository.findByNameIgnoreCaseAndColorIgnoreCase(name, color)
                 .map(facultyMapper::toDto)
-                .orElseThrow(FacultyNotFoundException::new);
+                .orElseThrow(() -> {
+                    logger.warn("Faculty with name - {} and color - {} doesn't exist", name, color);
+                    return new FacultyNotFoundException();
+                });
     }
 
     @Override
     public Collection<StudentDto> getStudentsByFacultyId(Long id) {
+        logger.info("Was invoked method for getting students by faculty id");
         return facultyRepository.findById(id).map(
                         faculty -> faculty.getStudents().stream()
                                 .map(studentMapper::toDto)
                                 .collect(Collectors.toList()))
-                .orElseThrow(FacultyNotFoundException::new);
+                .orElseThrow(() -> {
+                    logger.warn("Faculty with id - {} doesn't exist", id);
+                    return new FacultyNotFoundException();
+                });
     }
 }

@@ -16,7 +16,7 @@ public class StudentDto {
     @NotBlank(message = "Name is not filled in")
     private String name;
 
-    @Min(value = 0, message = "Age cannot be negative")
+    @Min(value = 16, message = "Age cannot be negative")
     private int age;
 
     @Min(value = 1, message = "Faculty not found")

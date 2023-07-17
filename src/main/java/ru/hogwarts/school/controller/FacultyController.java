@@ -46,7 +46,7 @@ public class FacultyController {
     @GetMapping("/filter")
     public ResponseEntity<FacultyDto> getFacultyByNameOrColor(@RequestParam(required = false) String name,
                                                               @RequestParam(required = false) String color) {
-        return ResponseEntity.ok().body(facultyService.getFacultyByNameOrColor(name, color));
+        return ResponseEntity.ok().body(facultyService.getFacultyByNameAndColor(name, color));
     }
 
     @GetMapping("/{id}/students")

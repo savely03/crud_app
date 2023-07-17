@@ -76,7 +76,7 @@ class FacultyControllerWebMvcTest {
 
     @Test
     void createFacultyTest() throws Exception {
-        when(facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(faculty.getName(), faculty.getColor()))
+        when(facultyRepository.findByNameIgnoreCaseAndColorIgnoreCase(faculty.getName(), faculty.getColor()))
                 .thenReturn(Optional.empty());
         when(facultyRepository.save(any(Faculty.class))).thenReturn(faculty);
 
@@ -94,7 +94,7 @@ class FacultyControllerWebMvcTest {
 
     @Test
     void createFacultyWhenFacultyAlreadyAdded() throws Exception {
-        when(facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(faculty.getName(), faculty.getColor()))
+        when(facultyRepository.findByNameIgnoreCaseAndColorIgnoreCase(faculty.getName(), faculty.getColor()))
                 .thenReturn(Optional.of(faculty));
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -190,7 +190,7 @@ class FacultyControllerWebMvcTest {
 
     @Test
     void getFacultyByNameOrColorTest() throws Exception {
-        when(facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(faculty.getName(), faculty.getColor()))
+        when(facultyRepository.findByNameIgnoreCaseAndColorIgnoreCase(faculty.getName(), faculty.getColor()))
                 .thenReturn(Optional.of(faculty));
 
         mockMvc.perform(MockMvcRequestBuilders
