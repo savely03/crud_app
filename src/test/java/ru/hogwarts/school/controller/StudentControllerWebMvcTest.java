@@ -339,14 +339,14 @@ class StudentControllerWebMvcTest {
 
     @Test
     void getAvgAgeOfStudentsTest() throws Exception {
-        double studentsCount = ThreadLocalRandom.current().nextDouble(100);
-
-        when(studentRepository.getAvgAgeOfStudents()).thenReturn(studentsCount);
+        List<Student> students = generateStudents();
+        double avgAge = students.stream().mapToInt(Student::getAge).sum() / (double) students.size();
+        when(studentRepository.findAll()).thenReturn(students);
 
         mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/avg-age"))
                 .andExpect(status().isOk())
                 .andExpect(result ->
-                        assertThat(Double.parseDouble(result.getResponse().getContentAsString())).isEqualTo(studentsCount));
+                        assertThat(Double.parseDouble(result.getResponse().getContentAsString())).isEqualTo(avgAge));
     }
 
     @Test
@@ -366,6 +366,29 @@ class StudentControllerWebMvcTest {
                 });
     }
 
+
+    @Test
+    void findAllSortUpperNamesStartingWithTest() throws Exception {
+        List<Student> students = generateStudents();
+        List<String> studentsNames = students.stream()
+                .map(s -> s.getName().toUpperCase())
+                .filter(n -> n.startsWith("A"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        when(studentRepository.findAll()).thenReturn(students);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/name/upper")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    List<String> names = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+                            });
+                    assertThat(names).isEqualTo(studentsNames);
+                });
+    }
+
     private List<Student> generateStudents() {
         return Stream.iterate(1L, i -> i + 1)
                 .limit(5)
@@ -373,4 +396,6 @@ class StudentControllerWebMvcTest {
                         .firstName()).age(faker.random().nextInt(16, 100)).build())
                 .collect(Collectors.toList());
     }
+
+
 }

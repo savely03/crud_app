@@ -254,6 +254,31 @@ public class FacultyControllerRestTemplateTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    void findLongestFacultyNameTest() {
+        Faculty facultyWithLongName = Faculty.builder().name("longestName").color("red").build();
+        Faculty facultyWithShortName = Faculty.builder().name("short").color("yellow").build();
+
+        facultyRepository.saveAll(List.of(facultyWithLongName, facultyWithShortName));
+
+        ResponseEntity<String> responseEntity = restTemplate
+                .getForEntity(LOCALHOST + port + ROOT + "/name/longest", String.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).isEqualTo(facultyWithLongName.getName());
+
+    }
+
+    @Test
+    void findLongestFacultyNameWhenFacultiesDoNotExistTest() {
+        ResponseEntity<String> responseEntity = restTemplate
+                .getForEntity(LOCALHOST + port + ROOT + "/name/longest", String.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNull();
+    }
+
     @AfterEach
     void cleanUp() {
         facultyRepository.deleteAll();

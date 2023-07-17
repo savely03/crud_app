@@ -28,4 +28,7 @@ public interface StudentService {
     double getAvgAgeOfStudents();
 
     Collection<StudentDto> getLastFiveStudents();
+
+
+    Collection<String> findAllSortUpperNamesStartingWith(String name);
 }
