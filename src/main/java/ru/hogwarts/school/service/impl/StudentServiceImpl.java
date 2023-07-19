@@ -3,6 +3,7 @@ package ru.hogwarts.school.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hogwarts.school.dto.FacultyDto;
@@ -17,7 +18,10 @@ import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 
@@ -156,5 +160,43 @@ public class StudentServiceImpl implements StudentService {
                 .filter(n -> n.startsWith(startWith))
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void printParallelNames() {
+        List<String> names = getSixNames();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        names.subList(0, 2).forEach(System.out::println);
+
+        executorService.execute(() -> names.subList(2, 4).forEach(System.out::println));
+        executorService.execute(() -> names.subList(4, 6).forEach(System.out::println));
+        executorService.shutdown();
+    }
+
+    @Override
+    public void printSynchronizedParallelNames() {
+        List<String> names = getSixNames();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        names.subList(0, 2).forEach(System.out::println);
+
+        executorService.execute(() -> printName(names.subList(2, 4)));
+        executorService.execute(() -> printName(names.subList(4, 6)));
+        executorService.shutdown();
+    }
+
+    private void printName(List<String> names) {
+        synchronized (this) {
+            names.forEach(System.out::println);
+        }
+    }
+
+    private List<String> getSixNames() {
+        if (studentRepository.count() < 6) {
+            throw new RuntimeException("Students less than 6");
+        }
+        return studentRepository.getNames(PageRequest.ofSize(6)).getContent();
     }
 }
