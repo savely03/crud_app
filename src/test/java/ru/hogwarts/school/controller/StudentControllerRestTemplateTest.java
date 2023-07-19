@@ -388,6 +388,28 @@ public class StudentControllerRestTemplateTest {
     }
 
 
+    @Test
+    void findAllSortUpperNamesStartingWithTest() {
+        List<Student> students = createStudents();
+        List<String> studentsNames = students.stream()
+                .map(s -> s.getName().toUpperCase())
+                .filter(n -> n.startsWith("A"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        ResponseEntity<List<String>> responseEntity = restTemplate.exchange(
+                LOCALHOST + port + ROOT + "/name/upper",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).isEqualTo(studentsNames);
+    }
+
     private List<Student> createStudents() {
         return studentRepository.saveAll(Stream.generate(() ->
                         Student.builder().name(faker.name().firstName()).faculty(faculty)

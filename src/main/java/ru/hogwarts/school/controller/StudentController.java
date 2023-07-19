@@ -87,4 +87,9 @@ public class StudentController {
     ResponseEntity<Collection<StudentDto>> getLastFiveStudents() {
         return ResponseEntity.ok(studentService.getLastFiveStudents());
     }
+
+    @GetMapping("/name/upper")
+    ResponseEntity<Collection<String>> findAllSortUpperNamesStartingWith(@RequestParam(value = "startWith", required = false) String name) {
+        return ResponseEntity.ok(studentService.findAllSortUpperNamesStartingWith(name));
+    }
 }

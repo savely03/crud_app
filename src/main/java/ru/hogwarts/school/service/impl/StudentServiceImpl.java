@@ -7,16 +7,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hogwarts.school.dto.FacultyDto;
 import ru.hogwarts.school.dto.StudentDto;
+import ru.hogwarts.school.entity.Student;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.exception.StudentNotFoundException;
 import ru.hogwarts.school.mapper.FacultyMapper;
 import ru.hogwarts.school.mapper.StudentMapper;
-import ru.hogwarts.school.entity.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -29,7 +30,6 @@ public class StudentServiceImpl implements StudentService {
     private final StudentMapper studentMapper;
     private final FacultyMapper facultyMapper;
     private final FacultyRepository facultyRepository;
-
     private final Logger logger = LoggerFactory.getLogger(StudentServiceImpl.class);
 
 
@@ -130,7 +130,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public double getAvgAgeOfStudents() {
         logger.info("Was invoked method for getting average age of students");
-        return studentRepository.getAvgAgeOfStudents();
+        return studentRepository.findAll()
+                .stream()
+                .mapToInt(Student::getAge)
+                .average()
+                .orElse(0);
     }
 
     @Override
@@ -139,6 +143,18 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.getLastFiveStudents()
                 .stream()
                 .map(studentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<String> findAllSortUpperNamesStartingWith(String name) {
+        String startWith = Objects.isNull(name) ? "A" : name;
+        logger.info("Was invoked method for finding all sort upper names starting with {}", startWith);
+        return studentRepository.findAll()
+                .parallelStream()
+                .map(student -> student.getName().toUpperCase())
+                .filter(n -> n.startsWith(startWith))
+                .sorted()
                 .collect(Collectors.toList());
     }
 }

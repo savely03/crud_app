@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hogwarts.school.dto.FacultyDto;
 import ru.hogwarts.school.dto.StudentDto;
+import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.exception.FacultyAlreadyAddedException;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.mapper.FacultyMapper;
@@ -15,6 +16,7 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 
@@ -105,5 +107,15 @@ public class FacultyServiceImpl implements FacultyService {
                     logger.warn("Faculty with id - {} doesn't exist", id);
                     return new FacultyNotFoundException();
                 });
+    }
+
+    @Override
+    public String findLongestFacultyName() {
+        logger.info("Was invoked method for getting longest faculty name");
+        return facultyRepository.findAll()
+                .parallelStream()
+                .map(Faculty::getName)
+                .max(Comparator.comparingInt(String::length))
+                .orElse(null);
     }
 }

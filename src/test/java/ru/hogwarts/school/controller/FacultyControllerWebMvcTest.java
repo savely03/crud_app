@@ -24,9 +24,11 @@ import ru.hogwarts.school.service.impl.FacultyServiceImpl;
 import ru.hogwarts.school.test_util.DbTest;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -230,11 +232,38 @@ class FacultyControllerWebMvcTest {
 
 
     @Test
-    void getStudentsByFacultyIdWhenFacultyDoesNotExist() throws Exception{
+    void getStudentsByFacultyIdWhenFacultyDoesNotExist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders
                         .get(ROOT + "/" + faculty.getId() + "/students")
                         .content(objectMapper.writeValueAsString(facultyDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void findLongestFacultyNameTest() throws Exception {
+        Faculty facultyWithLongName = Faculty.builder().name("longestName").build();
+        Faculty facultyWithShortName = Faculty.builder().name("short").build();
+
+        when(facultyRepository.findAll()).thenReturn(List.of(facultyWithLongName, facultyWithShortName));
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/name/longest")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result ->
+                        assertThat(result.getResponse().getContentAsString()).isEqualTo(facultyWithLongName.getName()));
+    }
+
+
+    @Test
+    void findLongestFacultyNameWhenFacultiesDoNotExistTest() throws Exception {
+        when(facultyRepository.findAll()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(MockMvcRequestBuilders.get(ROOT + "/name/longest")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result ->
+                        assertThat(result.getResponse().getContentAsString()).isEmpty());
     }
 }

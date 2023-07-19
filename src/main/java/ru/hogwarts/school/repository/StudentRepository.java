@@ -1,7 +1,10 @@
 package ru.hogwarts.school.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.hogwarts.school.entity.Student;
 
@@ -21,4 +24,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query(value = "SELECT * FROM (SELECT * FROM Student ORDER BY id DESC LIMIT 5) a ORDER BY id", nativeQuery = true)
     Collection<Student> getLastFiveStudents();
+
+    @Query("SELECT upper(s.name) FROM Student s WHERE upper(s.name) LIKE concat(:startWith, '%') ORDER BY s.name")
+    Collection<String> findAllSortUpperNamesStartingWith(@Param("startWith") String startWith);
+
+
+    @Query("SELECT s.name FROM Student s")
+    Page<String> getNames(Pageable pageable);
 }
