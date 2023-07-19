@@ -92,18 +92,4 @@ public class StudentController {
     ResponseEntity<Collection<String>> findAllSortUpperNamesStartingWith(@RequestParam(value = "startWith", required = false) String name) {
         return ResponseEntity.ok(studentService.findAllSortUpperNamesStartingWith(name));
     }
-
-
-    @GetMapping("/parallel/names")
-    public ResponseEntity<Void> getParallelNames() {
-        studentService.printParallelNames();
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/synchronized/parallel/names")
-    public ResponseEntity<Void> printSynchronizedParallelNames() {
-        studentService.printSynchronizedParallelNames();
-        return ResponseEntity.noContent().build();
-    }
-
 }

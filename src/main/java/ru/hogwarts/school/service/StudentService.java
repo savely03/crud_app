@@ -31,8 +31,4 @@ public interface StudentService {
 
 
     Collection<String> findAllSortUpperNamesStartingWith(String name);
-
-    void printParallelNames();
-
-    void printSynchronizedParallelNames();
 }
