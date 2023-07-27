@@ -6,15 +6,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.hogwarts.school.dto.StudentDto;
+import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.exception.StudentNotFoundException;
-import ru.hogwarts.school.entity.Faculty;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 import ru.hogwarts.school.test_util.DbTest;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 
 @DbTest
@@ -138,7 +139,6 @@ class StudentServiceImplTest {
                 .ignoringFields("students")
                 .isEqualTo(faculty);
     }
-
     @AfterEach
     void cleanUp() {
         studentRepository.deleteAll();
